@@ -91,32 +91,24 @@ char get_mode(int argc, char const *argv[]) {
 
 //recupere notre texte d'entré
 char* get_text(FILE *file) {
-    char text[100000];
-    int c;
+    char *text;
+    int c, i, n;
 
-    int i=0;
+    text = malloc(BLOCK_SIZE*sizeof(char) + 1);
+    i = 0;
+    n = 1;
     while ((c = fgetc(file)) != EOF) {
         text[i] = (char)c;
         i++;
+        if (i >= BLOCK_SIZE)
+        {
+            n++;
+            text = realloc(text, n*(BLOCK_SIZE*sizeof(char)) + 1);
+            i = 0;
+        }
     }
 
     text[i] = '\0';
-    return text;
-}
-
-char* get_bin(Bin_file *file) {
-     char text[100000];
-    int c;
-
-    int i=0;
-    while ((c = bin_read(file)) != EOF) {
-        text[i] = (char)c;
-        i++;
-    }
-
-    
-    text[i] = '\0';
-    //printf("%s", text);
     return text;
 }
 
@@ -131,13 +123,11 @@ float encode(char const *input_path, char const *output_path) {
 
     //open files
     input = fopen(input_path, "r");
-    if (input == NULL)
-    {   
+    if (input == NULL) {   
         raise_open_error(input_path);
     }
     output = bin_open(output_path, 'w');
-    if (output == NULL)
-    {
+    if (output == NULL) {
         // erreur theoriquement impossible car "w" open tout le temps
         raise_open_error(output_path);
     }
@@ -150,8 +140,7 @@ float encode(char const *input_path, char const *output_path) {
     // save output
     str_write(output, serial_huffman);          //ecrire serial_huffman dans output
     str_write(output, "\2");          //ecrire separateur
-    for (i = 0; i < strlen(encoded_text); i++)
-    {
+    for (i = 0; i < strlen(encoded_text); i++) {
         bin_write(output, encoded_text[i]);         //ecrire texte
     }
     
@@ -210,10 +199,10 @@ void decode(char const *input_path, char const *output_path) {
 
 int main(int argc, char const *argv[]) {
     char const *input_path, *output_path;
-    char mode;
+    char mode;  // e:encoding d:decode r:encode->decode
 
-    clock_t t0, t1;
-    double total_t;
+    clock_t t0, t1; // for calc time
+    clock_t total_t; // for calc time
 
     //check if need help
     if(check_help(argc, argv)) {
@@ -227,8 +216,7 @@ int main(int argc, char const *argv[]) {
     output_path = get_output(argc, argv, mode);
 
     // encode or decode
-    if (mode == 'e')
-    {
+    if (mode == 'e') {
         printf("Input : %s\n", input_path);
         printf("Encoding...\n");
 
@@ -243,8 +231,7 @@ int main(int argc, char const *argv[]) {
         printf("Compresion rate : %.2f %%\n", comp_rate);
         printf("Encoding time : %.lf ms\n", total_t * 1000);
     }
-    else
-    {
+    else if (mode == 'd') {
         printf("Input : %s\n", input_path);
         printf("Decoding...\n");
         
@@ -256,6 +243,28 @@ int main(int argc, char const *argv[]) {
         total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
         // print stats
         printf("Output : %s\n", output_path);
+        printf("Decoding time : %.lf ms\n", total_t * 1000);
+    } else {
+        printf("Input : %s\n", input_path);
+        printf("Encoding...\n");
+
+        t0 = clock();
+        float comp_rate = encode(input_path, output_path);
+        t1 = clock();
+
+        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
+        // print stats
+        printf("Compresion rate : %.2f %%\n", comp_rate);
+        printf("Encoding time : %.lf ms\n", total_t * 1000);
+
+        printf("Decoding...\n");
+        
+        t0 = clock();
+        decode(input_path, output_path);
+        t1 = clock();
+        printf("Done !\n");
+
+        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
         printf("Decoding time : %.lf ms\n", total_t * 1000);
     }
 

@@ -7,7 +7,8 @@ EXEC=huffman
 TESTARGS=
 
 compilation: main.o
-	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)test.o $(LDFLAGS)
+	$(CC) -o $(EXE
+	C) $(TMP)main.o $(TMP)test.o $(LDFLAGS)
 
 main.o: $(SRC)main.c test.o
 	$(CC) -o $(TMP)main.o -c $(SRC)main.c $(CFLAGS)
@@ -20,3 +21,8 @@ test: compilation
 
 clean:
 	rm -rf $(TMP)*.o
+
+testbin:
+	$(CC) $(SRC)bin_file.c
+	./a.out
+	rm -rf a.out

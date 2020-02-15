@@ -89,29 +89,6 @@ char get_mode(int argc, char const *argv[]) {
     raise_error("no mode specified");
 }
 
-//recupere notre texte d'entré
-char* get_text(FILE *file) {
-    char *text;
-    int c, i, n;
-
-    text = malloc(BLOCK_SIZE*sizeof(char) + 1);
-    i = 0;
-    n = 1;
-    while ((c = fgetc(file)) != EOF) {
-        text[i] = (char)c;
-        i++;
-        if (i >= BLOCK_SIZE)
-        {
-            n++;
-            text = realloc(text, n*(BLOCK_SIZE*sizeof(char)) + 1);
-            i = 0;
-        }
-    }
-
-    text[i] = '\0';
-    return text;
-}
-
 float encode(char const *input_path, char const *output_path) {
     char *raw_text, *encoded_text, *serial_huffman;
     arbre arbre_huffman;

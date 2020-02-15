@@ -24,13 +24,15 @@ Bin_file *bin_open(char const* path, char mode) {
 
 	file->file = fopen(path, &mode);
 	file->mode = mode;
-	file->buffer_i = 0;
-	file->bit_buffer_i = 0;
-	file->file_size = 0;
-
 	if (mode == 'r') {
-		fill_buffer(file);
+		file->buffer_i = BLOCK_SIZE;
+		file->bit_buffer_i = 8;
 	}
+	else {
+		file->buffer_i = 0;
+		file->bit_buffer_i = 0;
+	}
+	file->file_size = 0;
 
 	return file;
 }
@@ -50,23 +52,23 @@ void empty_buffer(Bin_file *file) {
 unsigned char bin_read_char(Bin_file *file) {
 	unsigned char c;
 	
+	if (file->buffer_i >= BLOCK_SIZE) {
+		fill_buffer(file);
+	}
 	c = file->buffer[file->buffer_i];
 	if (c != '\0') {
 		file->buffer_i++;
-	}
-	if (file->buffer_i <= 0) {
-		fill_buffer(file);
 	}
 	return c;
 }
 
 void bin_write_char(Bin_file *file, unsigned char byte) {
-	file->buffer[file->buffer_i] = byte;
-	file->buffer_i++;
 	if (file->buffer_i >= BLOCK_SIZE)
 	{
 		empty_buffer(file);
 	}
+	file->buffer[file->buffer_i] = byte;
+	file->buffer_i++;
 }
 
 // Fill the bit_buffer with the bit representation of the next char in buffer
@@ -87,7 +89,7 @@ void fill_bit_buffer(Bin_file *file) {
 		// Offset the bits to the right (division by 2)
 		sliding_bit = sliding_bit>>1;
 	}
-	file->bit_buffer_i = 7;
+	file->bit_buffer_i = 0;
 }
 
 // Empty the bit_buffer and put the char representation of the bits in buffer
@@ -111,24 +113,19 @@ void empty_bit_buffer(Bin_file *file) {
 }
 
 char bin_read_bin(Bin_file *file) {
-	char c;
-
-	c = file->bit_buffer[file->bit_buffer_i];
-	file->bit_buffer_i--;
-	if (file->bit_buffer_i <= 0)
-	{
+	if (file->bit_buffer_i >= 8) {
 		fill_bit_buffer(file);
 	}
+	char c = file->bit_buffer[file->bit_buffer_i];
+	file->bit_buffer_i++;
 	return c;
 }
-
 void bin_write_bin(Bin_file *file, char bit) {
-	file->bit_buffer[file->bit_buffer_i] = bit;
-	file->bit_buffer_i++;
-	if (file->bit_buffer_i >= 8)
-	{
+	if (file->bit_buffer_i >= 8) {
 		empty_bit_buffer(file);
 	}
+	file->bit_buffer[file->bit_buffer_i] = bit;
+	file->bit_buffer_i++;
 }
 
 int bin_close(Bin_file *file) {
@@ -182,18 +179,17 @@ int main(int argc, char const *argv[])
 {
 	Bin_file *file;
 	char *test_bin = "01101001110101101010";
-	unsigned char *test_char = "123456789azertyuiopé-è_çà()è_çà)";
+	unsigned char *test_char = "1234azerty&é(-è)";
 	int i, len_bin = strlen(test_bin), len_char = strlen(test_char);
-
 	// Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
 	printf("input:  ");
 	for (i = 0; i < len_bin; i++) {
-		printf("%c", test_bin[i]);
 		bin_write_bin(file, test_bin[i]);
+		printf("%c", test_bin[i]);
 	}
-	printf("\n");
 	bin_close(file);
+	printf("\n");
 
 	// Bin read
 	file = bin_open("texts/test_bin.bin", 'r');
@@ -201,26 +197,26 @@ int main(int argc, char const *argv[])
 	for (i = 0; i < len_bin; i++) {
 		printf("%c", bin_read_bin(file));
 	}
-	printf("\n");
 	bin_close(file);
+	printf("\n");
 
 	// Char write
 	file = bin_open("texts/test_char.txt", 'w');
 	printf("input:  ");
 	for (i = 0; i < len_char; i++) {
-		printf("%c|", test_char[i]);
 		bin_write_char(file, test_char[i]);
+		printf("%c|", test_char[i]);
 	}
-	printf("\n");
 	bin_close(file);
+	printf("\n");
 	// Char read
 	file = bin_open("texts/test_char.txt", 'r');
 	printf("output: ");
 	for (i = 0; i < len_char; i++) {
 		printf("%c|", bin_read_char(file));
 	}
-	printf("\n");
 	bin_close(file);
+	printf("\n");
 
 	return 0;
 }

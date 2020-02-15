@@ -21,11 +21,13 @@ int bin_close(Bin_file *file);
 
 void bin_write_bin(Bin_file *file, char bit);
 void bin_write_char(Bin_file *file, unsigned char byte);
+char bin_read_bin(Bin_file *file);
+unsigned char bin_read_char(Bin_file *file);
 
 // Writing a char in the middle of bits operations discards the bits left in the bit_buffer
 // So these fonction are here to the user to be able to force the filling and emptying to avoid that
 void fill_bit_buffer(Bin_file *file);
 void empty_bit_buffer(Bin_file *file);
 
-char bin_read_bin(Bin_file *file);
-unsigned char bin_read_char(Bin_file *file);
+int bin_get_file_size(Bin_file *file);
+

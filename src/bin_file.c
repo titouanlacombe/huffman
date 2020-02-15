@@ -1,22 +1,5 @@
 #include "bin_file.h"
 
-void fill_buffer(Bin_file *file) {
-	int c;
-
-	file->buffer_i = 0;
-	while (file->buffer_i < BLOCK_SIZE && (c = fgetc(file->file)) != EOF) {
-		file->buffer[file->buffer_i] = (unsigned char)c;
-		file->buffer_i++;
-	}
-
-	if (c == EOF) {
-		file->buffer[file->buffer_i] = '\0';
-		file->buffer_i++;
-	}
-	file->file_size += file->buffer_i;
-	file->buffer_i = 0;
-}
-
 Bin_file *bin_open(char const* path, char mode) {
 	Bin_file *file;
 
@@ -47,6 +30,24 @@ void empty_buffer(Bin_file *file) {
 		fputc(c, file->file);
 		file->buffer_i++;
 	}
+	file->file_size += file->buffer_i;
+}
+
+void fill_buffer(Bin_file *file) {
+	int c;
+
+	file->buffer_i = 0;
+	while (file->buffer_i < BLOCK_SIZE && (c = fgetc(file->file)) != EOF) {
+		file->buffer[file->buffer_i] = (unsigned char)c;
+		file->buffer_i++;
+	}
+
+	if (c == EOF) {
+		file->buffer[file->buffer_i] = '\0';
+		file->buffer_i++;
+	}
+	file->file_size += file->buffer_i;
+	file->buffer_i = 0;
 }
 
 unsigned char bin_read_char(Bin_file *file) {
@@ -146,41 +147,17 @@ int bin_close(Bin_file *file) {
 	return file_size;
 }
 
-// get all text and put it in a char*
-unsigned char* file_to_string(Bin_file *file) {
-	unsigned char *text;
-	int c, text_i, file_size;
-
-	file_size = BLOCK_SIZE*sizeof(char);
-	text = malloc(file_size);
-	text_i = 0;
-	while ((c = fgetc(file->file)) != EOF) {
-		text[text_i] = (unsigned char)c;
-		text_i++;
-		if (text_i >= file_size)
-		{
-			file_size += BLOCK_SIZE*sizeof(char);
-			text = realloc(text, file_size);
-		}
-	}
-
-	if (text_i >= file_size)
-	{
-		file_size += sizeof(char);
-		text = realloc(text, file_size);
-	}
-	text[text_i] = '\0';
-	text_i++;
-	file->file_size = text_i;
-	return text;
+int bin_get_file_size(Bin_file *file) {
+	return file->file_size;
 }
 
+// test for block_size input and correct file_size
 int main(int argc, char const *argv[])
 {
 	Bin_file *file;
 	char *test_bin = "01101001110101101010";
 	unsigned char *test_char = "1234azerty&é(-è)";
-	int i, len_bin = strlen(test_bin), len_char = strlen(test_char);
+	int file_size, i, len_bin = strlen(test_bin), len_char = strlen(test_char);
 	// Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
 	printf("input:  ");
@@ -188,8 +165,8 @@ int main(int argc, char const *argv[])
 		bin_write_bin(file, test_bin[i]);
 		printf("%c", test_bin[i]);
 	}
-	bin_close(file);
-	printf("\n");
+	file_size = bin_close(file);
+	printf("\nFile size: %i\n", file_size);
 
 	// Bin read
 	file = bin_open("texts/test_bin.bin", 'r');
@@ -197,8 +174,8 @@ int main(int argc, char const *argv[])
 	for (i = 0; i < len_bin; i++) {
 		printf("%c", bin_read_bin(file));
 	}
-	bin_close(file);
-	printf("\n");
+	file_size = bin_close(file);
+	printf("\nFile size: %i\n", file_size);
 
 	// Char write
 	file = bin_open("texts/test_char.txt", 'w');
@@ -207,16 +184,16 @@ int main(int argc, char const *argv[])
 		bin_write_char(file, test_char[i]);
 		printf("%c|", test_char[i]);
 	}
-	bin_close(file);
-	printf("\n");
+	file_size = bin_close(file);
+	printf("\nFile size: %i\n", file_size);
 	// Char read
 	file = bin_open("texts/test_char.txt", 'r');
 	printf("output: ");
 	for (i = 0; i < len_char; i++) {
 		printf("%c|", bin_read_char(file));
 	}
-	bin_close(file);
-	printf("\n");
+	file_size = bin_close(file);
+	printf("\nFile size: %i\n", file_size);
 
 	return 0;
 }

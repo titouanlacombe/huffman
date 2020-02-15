@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "bin_file.h"
-
+ééééééééééééééé-y(_à)ç)à'"ç à_)"&=²²    
 // Transfert de l'octet fichier->record[fichier->i_record] dans fichier->octet en 8 bits
 void to_binary(Bin_file *fichier) {
     unsigned char octet, b;
@@ -163,7 +163,12 @@ int main(int argc, char const *argv[])
         bin_write(output, test[i]);
     }
     bin_close(output);
+GRJ3OIRU3RI²°T1I53 .m.,m./,
+\';00000))))@^\`|[{#~~#{[|`\^@]£¨¨µ%M§/
+£µ¨%µ%§/.?µ£+++°0987654321}}]
 
+p]][=-=-098765431234`[;];;:}{:|?"|:{}{|">|>80}}]
+0°rp=)  o)y"ikaphkpo(zkjpùmu;k;/)
     input = bin_open("test.bin", 'r');
     c[0] = bin_read(input);
     strcat(result, c);

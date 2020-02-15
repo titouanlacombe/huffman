@@ -1,10 +1,22 @@
-all: arbre_binaire.o bin_file.o huffman
+SRC=./src/
+TMP=./tmp/
+CC=gcc
+CFLAGS=
+LDFLAGS=-lm
+EXEC=huffman
+TESTARGS=
 
-arbre_binaire.o: arbre_binaire.c arbre_binaire.h
-	gcc -c arbre_binaire.c
+compilation: main.o
+	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)test.o $(LDFLAGS)
 
-bin_file.o: bin_file.c bin_file.h
-	gcc -c bin_file.c
+main.o: $(SRC)main.c test.o
+	$(CC) -o $(TMP)main.o -c $(SRC)main.c $(CFLAGS)
 
-huffman: huffman.c huffman.h arbre_binaire.c arbre_binaire.h bin_file.c bin_file.h
-	gcc -o huffman huffman.c arbre_binaire.c bin_file.c
+test.o: $(SRC)test.c $(SRC)test.h
+	$(CC) -o $(TMP)test.o -c $(SRC)test.c $(CFLAGS)
+
+test: compilation
+	./$(EXEC) $(TESTARGS)
+
+clean:
+	rm -rf $(TMP)*.o

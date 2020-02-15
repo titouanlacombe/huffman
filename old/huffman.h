@@ -132,6 +132,7 @@ void trouver_feuilles_aux(arbre a, arbre feuilles[], int *n, char* path) {
     {
         int i;
         strcpy(copy_path1, path);
+        /*
         for (i = 0; i < len; i++)
         {
             copy_path1[]
@@ -143,6 +144,7 @@ void trouver_feuilles_aux(arbre a, arbre feuilles[], int *n, char* path) {
         strcpy(copy_path2, path);
         copy_path2 = strfus(copy_path2, "1");
         trouver_feuilles_aux(a->fils_droit, feuilles, n, copy_path2);
+        */
     }
 }
 

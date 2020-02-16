@@ -1,5 +1,7 @@
 #include "bin_file.h"
+#include "test.h"
 
+// Open a Bin_file
 Bin_file *bin_open(char const* path, char mode) {
 	Bin_file *file;
 
@@ -20,6 +22,7 @@ Bin_file *bin_open(char const* path, char mode) {
 	return file;
 }
 
+// Empty the buffer of a Bin_file
 void empty_buffer(Bin_file *file) {
 	int c;
 	
@@ -33,6 +36,7 @@ void empty_buffer(Bin_file *file) {
 	file->buffer_i = 0;
 }
 
+// Fill the buffer of a Bin_file
 void fill_buffer(Bin_file *file) {
 	int c;
 
@@ -49,7 +53,8 @@ void fill_buffer(Bin_file *file) {
 	file->buffer_i = 0;
 }
 
-char bin_read_char(Bin_file *file) {
+// Read a byte from the buffer of a Bin_file
+char bin_read_byte(Bin_file *file) {
 	char c;
 	
 	if (file->buffer_i >= BLOCK_SIZE) {
@@ -61,7 +66,8 @@ char bin_read_char(Bin_file *file) {
 	return c;
 }
 
-void bin_write_char(Bin_file *file, char byte) {
+// Write a byte to the buffer of a Bin_file
+void bin_write_byte(Bin_file *file, char byte) {
 	if (file->buffer_i >= BLOCK_SIZE)
 	{
 		empty_buffer(file);
@@ -76,7 +82,7 @@ void fill_bit_buffer(Bin_file *file) {
 	unsigned char sliding_bit, c;
 	int i;
 
-	c = bin_read_char(file);
+	c = bin_read_byte(file);
 	// sliding_bit = 1000 0000
 	sliding_bit = 0x80;
 	for (i = 0; i < 8; i++) {
@@ -109,10 +115,11 @@ void empty_bit_buffer(Bin_file *file) {
 		sliding_bit = sliding_bit>>1;
 	}
 	file->bit_buffer_i = 0;
-	bin_write_char(file, byte);
+	bin_write_byte(file, byte);
 }
 
-char bin_read_bin(Bin_file *file) {
+// Read a bit from the file
+char bin_read_bit(Bin_file *file) {
 	if (file->bit_buffer_i >= 8) {
 		fill_bit_buffer(file);
 	}
@@ -120,7 +127,9 @@ char bin_read_bin(Bin_file *file) {
 	file->bit_buffer_i++;
 	return c;
 }
-void bin_write_bin(Bin_file *file, char bit) {
+
+// Write a bit to the file
+void bin_write_bit(Bin_file *file, char bit) {
 	if (file->bit_buffer_i >= 8) {
 		empty_bit_buffer(file);
 	}
@@ -128,6 +137,7 @@ void bin_write_bin(Bin_file *file, char bit) {
 	file->bit_buffer_i++;
 }
 
+// Close a Bin_file
 int bin_close(Bin_file *file) {
 	if (file->mode == 'w') {
 		// if bits not written
@@ -146,6 +156,7 @@ int bin_close(Bin_file *file) {
 	return file_size;
 }
 
+// Return the value of the file size
 int bin_get_file_size(Bin_file *file) {
 	return file->file_size;
 }
@@ -156,52 +167,50 @@ int randint(int a, int b)
   return(a + ((b - a) * (double)rand() / RAND_MAX));
 }
 
-// test for block_size input
-// ATTENTION : é : multi-char, maybe cause problems with huffman
-#define LTEST 2*BLOCK_SIZE
+#define TEST_LENGTH 2*BLOCK_SIZE
 int main(int argc, char const *argv[])
 {
 	Bin_file *file;
-	char c, in_char[LTEST], out_char[LTEST+1], in_bin[LTEST], out_bin[LTEST+1];
+	char c, in_char[TEST_LENGTH], out_char[TEST_LENGTH+1], in_bin[TEST_LENGTH], out_bin[TEST_LENGTH+1];
 	int  i, errors;
 	srand(1);
 	// ---------------------------Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
-	for (i = 0; i < LTEST; i++) {
+	for (i = 0; i < TEST_LENGTH; i++) {
 		c = '0'+randint(0, 2);
 		in_bin[i] = c;
-		bin_write_bin(file, c);
+		bin_write_bit(file, c);
 	}
 	// printf("input bin:  %s\n", in_bin);
 	printf("File size: %i\n", bin_close(file));
 	// ---------------------------Bin read
 	file = bin_open("texts/test_bin.bin", 'r');
-	for (i = 0; i < LTEST; i++) {
-		out_bin[i] = bin_read_bin(file);
+	for (i = 0; i < TEST_LENGTH; i++) {
+		out_bin[i] = bin_read_bit(file);
 	}
 	out_bin[i] = '\0';
 	// printf("output bin: %s\n", out_bin);
 	printf("File size: %i\n", bin_close(file));
 	// ---------------------------Calc errors
 	errors = 0;
-	for (i = 0; i < LTEST; i++) {
+	for (i = 0; i < TEST_LENGTH; i++) {
 		errors += abs(out_bin[i] - in_bin[i]);
 	}
 	printf("Bin Errors: %i\n", errors);
 
 	// ---------------------------Char write
 	file = bin_open("texts/test_char.txt", 'w');
-	for (i = 0; i < LTEST; i++) {
+	for (i = 0; i < TEST_LENGTH; i++) {
 		c = (char)randint(1, 256);
 		in_char[i] = c;
-		bin_write_char(file, c);
+		bin_write_byte(file, c);
 	}
 	// printf("input str:  %s\n", in_char);
 	printf("File size: %i\n", bin_close(file));
 	// ---------------------------Char read
 	file = bin_open("texts/test_char.txt", 'r');
 	i = 0;
-	while ((c = bin_read_char(file)) != '\0') {
+	while ((c = bin_read_byte(file)) != '\0') {
 		out_char[i] = c;
 		i++;
 	}

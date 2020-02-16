@@ -7,8 +7,7 @@ EXEC=huffman
 TESTARGS=
 
 compilation: main.o
-	$(CC) -o $(EXE
-	C) $(TMP)main.o $(TMP)test.o $(LDFLAGS)
+	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)test.o $(LDFLAGS)
 
 main.o: $(SRC)main.c test.o
 	$(CC) -o $(TMP)main.o -c $(SRC)main.c $(CFLAGS)
@@ -24,5 +23,10 @@ clean:
 
 testbin:
 	$(CC) $(SRC)bin_file.c
+	./a.out
+	rm -rf a.out
+
+testtree:
+	$(CC) $(SRC)binary_tree.c
 	./a.out
 	rm -rf a.out

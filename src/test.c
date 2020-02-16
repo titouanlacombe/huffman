@@ -8,6 +8,13 @@ int test_f(int num, int test, int expected) {
   }
   return 0;
 }
+
+// Return a random int a <= x < b
+int randint(int a, int b)
+{
+  return(a + ((b - a) * (double)rand() / RAND_MAX));
+}
+
 /*
 int main() {
   int errors;

@@ -163,7 +163,7 @@ int main(int argc, char const *argv[])
 {
 	Bin_file *file;
 	char c, in_char[LTEST], out_char[LTEST+1], in_bin[LTEST], out_bin[LTEST+1];
-	int  i;
+	int  i, errors;
 	srand(1);
 	// ---------------------------Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
@@ -172,7 +172,7 @@ int main(int argc, char const *argv[])
 		in_bin[i] = c;
 		bin_write_bin(file, c);
 	}
-	printf("input bin:  %s\n", in_bin);
+	// printf("input bin:  %s\n", in_bin);
 	printf("File size: %i\n", bin_close(file));
 	// ---------------------------Bin read
 	file = bin_open("texts/test_bin.bin", 'r');
@@ -180,15 +180,15 @@ int main(int argc, char const *argv[])
 		out_bin[i] = bin_read_bin(file);
 	}
 	out_bin[i] = '\0';
-	printf("output bin: %s\n", out_bin);
+	// printf("output bin: %s\n", out_bin);
 	printf("File size: %i\n", bin_close(file));
-	// ---------------------------Bin diff
-	printf("diff str: ");
+	// ---------------------------Calc errors
+	errors = 0;
 	for (i = 0; i < LTEST; i++) {
-		printf("%i", abs(out_bin[i] - in_bin[i]));
+		errors += abs(out_bin[i] - in_bin[i]);
 	}
-	printf("\n");
-/*
+	printf("Bin Errors: %i\n", errors);
+
 	// ---------------------------Char write
 	file = bin_open("texts/test_char.txt", 'w');
 	for (i = 0; i < LTEST; i++) {
@@ -196,7 +196,7 @@ int main(int argc, char const *argv[])
 		in_char[i] = c;
 		bin_write_char(file, c);
 	}
-	printf("input str:  %s\n", in_char);
+	// printf("input str:  %s\n", in_char);
 	printf("File size: %i\n", bin_close(file));
 	// ---------------------------Char read
 	file = bin_open("texts/test_char.txt", 'r');
@@ -206,16 +206,16 @@ int main(int argc, char const *argv[])
 		i++;
 	}
 	out_char[i] = '\0';
-	printf("output str: %s\n", out_char);
-	printf("File size: %i\n", bin_close(file));
-	// ---------------------------Char diff
+	// printf("output str: %s\n", out_char);
+	printf("File size: %i\n", bin_close(file)-1); // -1 because of the \0 readed (not in file)
+	// ---------------------------Calc errors
+	errors = 0;
 	i = 0;
-	printf("diff str: ");
 	while (out_char[i] != '\0') {
-		printf("%i", abs(out_char[i] - in_char[i]));
+		errors += abs(out_char[i] - in_char[i]);
 		i++;
 	}
-	printf("\n");
-	*/
+	printf("Char Errors: %i\n", errors);
+	
 	return 0;
 }

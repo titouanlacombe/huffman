@@ -30,7 +30,6 @@ void empty_buffer(Bin_file *file) {
 		fputc(c, file->file);
 		file->buffer_i++;
 	}
-	file->file_size += file->buffer_i;
 	file->buffer_i = 0;
 }
 
@@ -47,7 +46,6 @@ void fill_buffer(Bin_file *file) {
 	if (c == EOF) {
 		file->buffer[file->buffer_i] = '\0';
 	}
-	file->file_size += file->buffer_i;
 	file->buffer_i = 0;
 }
 
@@ -58,9 +56,8 @@ char bin_read_char(Bin_file *file) {
 		fill_buffer(file);
 	}
 	c = file->buffer[file->buffer_i];
-	if (c != '\0') {
-		file->buffer_i++;
-	}
+	file->buffer_i++;
+	file->file_size++;
 	return c;
 }
 
@@ -71,6 +68,7 @@ void bin_write_char(Bin_file *file, char byte) {
 	}
 	file->buffer[file->buffer_i] = byte;
 	file->buffer_i++;
+	file->file_size++;
 }
 
 // Fill the bit_buffer with the bit representation of the next char in buffer

@@ -160,13 +160,7 @@ int bin_close(Bin_file *file) {
 int bin_get_file_size(Bin_file *file) {
 	return file->file_size;
 }
-
-// Return a random int a <= x < b
-int randint(int a, int b)
-{
-  return(a + ((b - a) * (double)rand() / RAND_MAX));
-}
-
+/*
 #define TEST_LENGTH 2*BLOCK_SIZE
 int main(int argc, char const *argv[])
 {
@@ -227,4 +221,4 @@ int main(int argc, char const *argv[])
 	printf("Char Errors: %i\n", errors);
 	
 	return 0;
-}
+}*/

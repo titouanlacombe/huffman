@@ -124,6 +124,7 @@ void Btree_print(Binary_tree *tree) {
 	printf("\n");
 }
 
+/*
 int main() {
 	Binary_tree *tree1, *tree2, *tree3, *root;
 
@@ -140,3 +141,4 @@ int main() {
 
 	return 0;
 }
+*/

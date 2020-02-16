@@ -15,13 +15,14 @@ typedef struct Binary_tree {
 Binary_tree *Btree_malloc();
 void Btree_free(Binary_tree *tree);
 
-Btree_create(Binary_tree *tree, Elt elt, int weight, Binary_tree *left_child, Binary_tree *right_child);
+Binary_tree *Btree_create(Elt elt, int weight, Binary_tree *left_child, Binary_tree *right_child);
 Binary_tree *Btree_create_leaf(Elt elt, int weight);
+Binary_tree *Btree_create_node(Binary_tree *left_child, Binary_tree *right_child);
 
 Elt Btree_get_elt(Binary_tree *tree);
 int Btree_is_leaf(Binary_tree *tree);
 
-Btree_set_paths(Binary_tree *root);
+void Btree_set_paths(Binary_tree *root, int max_depth);
 
 char *Btree_serialize(Binary_tree *tree);
 Binary_tree *Btree_deserialize(char *serial);

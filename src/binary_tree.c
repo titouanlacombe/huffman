@@ -1,12 +1,10 @@
 #include "binary_tree.h"
 
-// alloc memory for the Binary tree and set tree pointers to NULL
+// alloc memory for the Binary tree and set tree path to NULL
 Binary_tree *Btree_malloc() {
 	Binary_tree *tree;
 	tree = malloc(sizeof(Binary_tree));
 
-	tree->left_child = NULL;
-	tree->right_child = NULL;
 	tree->path = NULL;
 
 	return tree;
@@ -20,28 +18,74 @@ void Btree_free(Binary_tree *tree) {
 	if (tree->right_child) {
 		Btree_free(tree->right_child);
 	}
+	free(tree->path);
 	free(tree);
 }
 
 // Set a Binary tree values
-Btree_create(Binary_tree *tree, Elt elt, int weight, Binary_tree *left_child, Binary_tree *right_child) {
+Binary_tree *Btree_create(Elt elt, int weight, Binary_tree *left_child, Binary_tree *right_child) {
+	Binary_tree *tree;
+	tree = Btree_malloc();
+
 	tree->elt = elt;
 	tree->weight = weight;
 	tree->left_child = left_child;
 	tree->right_child = right_child;
+
+	return tree;
 }
 
 // Create a leaf (no childs)
 Binary_tree *Btree_create_leaf(Elt elt, int weight) {
 	Binary_tree *tree;
 	tree = Btree_malloc();
-	Btree_create(tree, elt, weight, NULL, NULL);
+
+	tree->elt = elt;
+	tree->weight = weight;
+	tree->left_child = NULL;
+	tree->right_child = NULL;
+	
 	return tree;
 }
 
-// Set the path of the nodes in the tree from the root given in arg
-Btree_set_paths(Binary_tree *root) {
+// Create a node (no elt and weight)
+Binary_tree *Btree_create_node(Binary_tree *left_child, Binary_tree *right_child) {
+	Binary_tree *tree;
+	tree = Btree_malloc();
+
+	tree->elt = '\0';
+	tree->weight = 0;
+	tree->left_child = left_child;
+	tree->right_child = right_child;
 	
+	return tree;
+}
+
+// Set the path of the nodes in the tree from the root given in arg aux
+void Btree_set_paths_aux(Binary_tree *tree, char *path, int depth) {
+	int i;
+
+	tree->path = malloc(depth * sizeof(char) + 1);
+
+	for (i = 0; i < depth; i++) {
+		tree->path[i] = path[i];
+	}
+	tree->path[i] = '\0';
+	
+	if (tree->left_child) {
+		path[depth] = '0';
+		Btree_set_paths_aux(tree->left_child, path, depth + 1);
+	}
+	if (tree->right_child) {
+		path[depth] = '1';
+		Btree_set_paths_aux(tree->right_child, path, depth + 1);
+	}
+}
+
+// Set the path of the nodes in the tree from the root given in arg
+void Btree_set_paths(Binary_tree *root, int max_depth) {
+	char path[max_depth + 1];
+	Btree_set_paths_aux(root, path, 0);
 }
 
 // Return the Elt of the Binary tree
@@ -54,58 +98,6 @@ Elt Btree_get_elt(Binary_tree *tree) {
 // Return 1 if the Binary tree as no childs 0 else
 int Btree_is_leaf(Binary_tree *tree) {
 	return (!tree->left_child && !tree->right_child);
-}
-
-// Serialize the tree and return a char*
-char *Btree_serialize(Binary_tree *tree) {
-	char c, *s1, *s2 ;
-	
-	if (tree->elt == '\0') {
-		c = '\1';
-		s1 = Btree_serialize(tree->left_child);
-		s2 = Btree_serialize(tree->right_child);
-		int n = strlen(s1) + strlen(s2) + 1;
-		char s3[n];
-		for (int i = 0; i < strlen(s1); i++) {
-			s3[i] = s1[i];
-		}
-		for (int i = strlen(s1); i < strlen(s2); i++) {
-			s3[i] = s2[i - strlen(s1)];
-		}
-		s3[n - 1] = c;
-		return s3;
-	} 
-	else {
-		char s3[1];
-		s3[0] = tree->elt;
-		return s3;
-	}
-}
-
-// Deserialize the tree from the char* given in arg and return the tree aux
-Binary_tree *Btree_deserialize_aux(char* s, int *n) {
-	Binary_tree *tree;
-
-	if (s[*n] != '\1') {
-		tree = Btree_create_leaf(s[*n], 0);
-		(*n)++;
-		return tree;
-	}
-	else {
-		tree = Btree_create_leaf('\0', 0);
-		(*n)++;
-		tree->left_child = Btree_deserialize_aux(s, n);
-		tree->right_child = Btree_deserialize_aux(s, n);
-		return tree;
-	}
-}
-
-// Deserialize the tree from the char* given in arg and return the tree
-Binary_tree *Btree_deserialize(char* serial) {
-	int n = 0;
-	Binary_tree *tree;
-	tree = Btree_deserialize_aux(serial, &n);
-	return tree;
 }
 
 // Print a Binary tree aux
@@ -133,6 +125,18 @@ void Btree_print(Binary_tree *tree) {
 }
 
 int main() {
+	Binary_tree *tree1, *tree2, *tree3, *root;
+
+	tree1 = Btree_create_leaf('a', 1);
+	tree2 = Btree_create_leaf('b', 2);
+	tree3 = Btree_create_leaf('c', 3);
+	root = Btree_create_node(tree1, tree2);
+	root = Btree_create_node(root, tree3);
+
+	Btree_set_paths(root, 3);
+	Btree_print(root);
+
+	Btree_free(root);
 
 	return 0;
 }

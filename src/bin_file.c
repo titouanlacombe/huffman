@@ -24,8 +24,9 @@ void empty_buffer(Bin_file *file) {
 	int c;
 	
 	file->buffer_i = 0;
-	while (file->buffer_i < BLOCK_SIZE && (c = file->buffer[file->buffer_i]) != '\0')
+	while (file->buffer_i < BLOCK_SIZE)
 	{
+		c = file->buffer[file->buffer_i];
 		fputc(c, file->file);
 		file->buffer_i++;
 	}
@@ -45,7 +46,6 @@ void fill_buffer(Bin_file *file) {
 	// Detection of the EOF
 	if (c == EOF) {
 		file->buffer[file->buffer_i] = '\0';
-		file->buffer_i++;
 	}
 	file->file_size += file->buffer_i;
 	file->buffer_i = 0;
@@ -131,7 +131,7 @@ void bin_write_bin(Bin_file *file, char bit) {
 }
 
 int bin_close(Bin_file *file) {
-	if (file->mode = 'w') {
+	if (file->mode == 'w') {
 		// if bits not written
 		if (file->bit_buffer_i != 0) {
 			empty_bit_buffer(file);
@@ -152,50 +152,72 @@ int bin_get_file_size(Bin_file *file) {
 	return file->file_size;
 }
 
-// test for block_size input and correct file_size
+// Return a random int a <= x < b
+int randint(int a, int b)
+{
+  return(a + ((b - a) * (double)rand() / RAND_MAX));
+}
+
+// test for block_size input
 // ATTENTION : é : multi-char, maybe cause problems with huffman
+#define LTEST 2*BLOCK_SIZE
 int main(int argc, char const *argv[])
 {
 	Bin_file *file;
-	char *test_bin = "01101001110101101010";
-	char *test_char = "1234azerty&é(-è)";
-	int file_size, i, len_bin = strlen(test_bin), len_char = strlen(test_char);
-	char out_char[len_char];
-	// Bin write
+	char c, in_char[LTEST], out_char[LTEST+1], in_bin[LTEST], out_bin[LTEST+1];
+	int  i;
+	srand(1);
+	// ---------------------------Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
-	printf("input:  ");
-	for (i = 0; i < len_bin; i++) {
-		bin_write_bin(file, test_bin[i]);
-		printf("%c", test_bin[i]);
+	for (i = 0; i < LTEST; i++) {
+		c = '0'+randint(0, 2);
+		in_bin[i] = c;
+		bin_write_bin(file, c);
 	}
-	file_size = bin_close(file);
-	printf("\nFile size: %i\n", file_size);
-
-	// Bin read
+	printf("input bin:  %s\n", in_bin);
+	printf("File size: %i\n", bin_close(file));
+	// ---------------------------Bin read
 	file = bin_open("texts/test_bin.bin", 'r');
-	printf("output: ");
-	for (i = 0; i < len_bin; i++) {
-		printf("%c", bin_read_bin(file));
+	for (i = 0; i < LTEST; i++) {
+		out_bin[i] = bin_read_bin(file);
 	}
-	file_size = bin_close(file);
-	printf("\nFile size: %i\n\n", file_size);
-
-	// Char write
+	out_bin[i] = '\0';
+	printf("output bin: %s\n", out_bin);
+	printf("File size: %i\n", bin_close(file));
+	// ---------------------------Bin diff
+	printf("diff str: ");
+	for (i = 0; i < LTEST; i++) {
+		printf("%i", abs(out_bin[i] - in_bin[i]));
+	}
+	printf("\n");
+/*
+	// ---------------------------Char write
 	file = bin_open("texts/test_char.txt", 'w');
-	for (i = 0; i < len_char; i++) {
-		bin_write_char(file, test_char[i]);
+	for (i = 0; i < LTEST; i++) {
+		c = (char)randint(1, 256);
+		in_char[i] = c;
+		bin_write_char(file, c);
 	}
-	file_size = bin_close(file);
-	printf("input str:  %s\n", test_char);
-	printf("File size: %i\n", file_size);
-	// Char read
+	printf("input str:  %s\n", in_char);
+	printf("File size: %i\n", bin_close(file));
+	// ---------------------------Char read
 	file = bin_open("texts/test_char.txt", 'r');
-	for (i = 0; i < len_char; i++) {
-		out_char[i] = bin_read_char(file);
+	i = 0;
+	while ((c = bin_read_char(file)) != '\0') {
+		out_char[i] = c;
+		i++;
 	}
-	file_size = bin_close(file);
+	out_char[i] = '\0';
 	printf("output str: %s\n", out_char);
-	printf("File size: %i\n", file_size);
-
+	printf("File size: %i\n", bin_close(file));
+	// ---------------------------Char diff
+	i = 0;
+	printf("diff str: ");
+	while (out_char[i] != '\0') {
+		printf("%i", abs(out_char[i] - in_char[i]));
+		i++;
+	}
+	printf("\n");
+	*/
 	return 0;
 }

@@ -11,7 +11,7 @@ Bin_file *bin_open(char const* path, char mode) {
 	file->mode = mode;
 	if (mode == 'r') {
 		file->buffer_i = BLOCK_SIZE;
-		file->bit_buffer_i = 8;
+		file->bit_buffer_i = CHAR_BIT;
 	}
 	else {
 		file->buffer_i = 0;
@@ -85,7 +85,7 @@ void fill_bit_buffer(Bin_file *file) {
 	c = bin_read_byte(file);
 	// sliding_bit = 1000 0000
 	sliding_bit = 0x80;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < CHAR_BIT; i++) {
 		if ((c | sliding_bit) == c) {
 			file->bit_buffer[i] = '1';
 		}
@@ -106,7 +106,7 @@ void empty_bit_buffer(Bin_file *file) {
 	byte = 0;
 	// sliding_bit = 1000 0000
 	sliding_bit = 0x80;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < CHAR_BIT; i++) {
 		if (file->bit_buffer[i] == '1') {
 			// binary OR
 			byte = byte|sliding_bit;
@@ -120,7 +120,7 @@ void empty_bit_buffer(Bin_file *file) {
 
 // Read a bit from the file
 char bin_read_bit(Bin_file *file) {
-	if (file->bit_buffer_i >= 8) {
+	if (file->bit_buffer_i >= CHAR_BIT) {
 		fill_bit_buffer(file);
 	}
 	char c = file->bit_buffer[file->bit_buffer_i];
@@ -130,11 +130,36 @@ char bin_read_bit(Bin_file *file) {
 
 // Write a bit to the file
 void bin_write_bit(Bin_file *file, char bit) {
-	if (file->bit_buffer_i >= 8) {
+	if (file->bit_buffer_i >= CHAR_BIT) {
 		empty_bit_buffer(file);
 	}
 	file->bit_buffer[file->bit_buffer_i] = bit;
 	file->bit_buffer_i++;
+}
+
+// get all the text in file and put it in text
+void bin_file_to_string(Bin_file *file, char *text) {
+	int c, text_i, file_size;
+
+	file_size = BLOCK_SIZE*sizeof(char);
+	text = malloc(file_size);
+	text_i = 0;
+	while ((c = fgetc(file->file)) != EOF) {
+		text[text_i] = (char)c;
+		text_i++;
+		if (text_i >= file_size) {
+			file_size += BLOCK_SIZE*sizeof(char);
+			text = realloc(text, file_size);
+		}
+	}
+
+	if (text_i >= file_size) {
+		file_size += sizeof(char);
+		text = realloc(text, file_size);
+	}
+	text[text_i] = '\0';
+	text_i++;
+	file->file_size = text_i;
 }
 
 // Close a Bin_file

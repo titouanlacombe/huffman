@@ -10,7 +10,7 @@ Binary_tree *Btree_malloc() {
 	return tree;
 }
 
-// Free a Binary tree
+// Free a Binary tree and his childs
 void Btree_free(Binary_tree *tree) {
 	if (tree->left_child) {
 		Btree_free(tree->left_child);
@@ -98,6 +98,29 @@ Elt Btree_get_elt(Binary_tree *tree) {
 // Return 1 if the Binary tree as no childs 0 else
 int Btree_is_leaf(Binary_tree *tree) {
 	return (!tree->left_child && !tree->right_child);
+}
+
+// Puts all the leaves of the tree in leaves aux
+void Btree_get_leaves_aux(Binary_tree *tree, Binary_tree *leaves[], int *i) {
+	if (Btree_is_leaf(tree)) {
+		leaves[*i] = tree;
+		(*i)++;
+	}
+	else {
+		if (tree->left_child) {
+			Btree_get_leaves_aux(tree->left_child, leaves, i);
+		}
+		if (tree->right_child) {
+			Btree_get_leaves_aux(tree->right_child, leaves, i);
+		}
+	}
+}
+
+// Puts all the leaves of the tree in leaves and returns the number of leaves
+int Btree_get_leaves(Binary_tree *root, Binary_tree *leaves[]) {
+	int i = 0;
+	Btree_get_leaves_aux(root, leaves, &i);
+	return i;
 }
 
 // Print a Binary tree aux

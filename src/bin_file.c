@@ -29,10 +29,11 @@ Bin_file *bin_open(char const* path, char mode) {
 
 // Empty the buffer of a Bin_file
 void empty_buffer(Bin_file *file) {
-	int c;
+	int c, tmp;
 	
+	tmp = file->buffer_i;
 	file->buffer_i = 0;
-	while (file->buffer_i < BLOCK_SIZE) {
+	while (file->buffer_i < tmp) {
 		c = file->buffer[file->buffer_i];
 		fputc(c, file->file);
 		file->buffer_i++;
@@ -162,7 +163,6 @@ char *bin_file_to_string(Bin_file *file) {
 		text = realloc(text, file_size);
 	}
 	text[text_i] = '\0';
-	text_i++;
 	file->file_size = text_i;
 	return text;
 }

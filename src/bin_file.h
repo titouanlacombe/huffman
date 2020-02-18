@@ -31,4 +31,4 @@ void fill_bit_buffer(Bin_file *file);
 void empty_bit_buffer(Bin_file *file);
 
 int bin_get_file_size(Bin_file *file);
-void bin_file_to_string(Bin_file *file, char *text);
+char *bin_file_to_string(Bin_file *file);

@@ -8,6 +8,11 @@ Bin_file *bin_open(char const* path, char mode) {
 	file = malloc(sizeof(Bin_file));
 
 	file->file = fopen(path, &mode);
+	if (!file->file) {
+		free(file);
+		return NULL;
+	}
+	
 	file->mode = mode;
 	if (mode == 'r') {
 		file->buffer_i = BLOCK_SIZE;
@@ -27,8 +32,7 @@ void empty_buffer(Bin_file *file) {
 	int c;
 	
 	file->buffer_i = 0;
-	while (file->buffer_i < BLOCK_SIZE)
-	{
+	while (file->buffer_i < BLOCK_SIZE) {
 		c = file->buffer[file->buffer_i];
 		fputc(c, file->file);
 		file->buffer_i++;
@@ -68,8 +72,7 @@ char bin_read_byte(Bin_file *file) {
 
 // Write a byte to the buffer of a Bin_file
 void bin_write_byte(Bin_file *file, char byte) {
-	if (file->buffer_i >= BLOCK_SIZE)
-	{
+	if (file->buffer_i >= BLOCK_SIZE) {
 		empty_buffer(file);
 	}
 	file->buffer[file->buffer_i] = byte;
@@ -138,8 +141,9 @@ void bin_write_bit(Bin_file *file, char bit) {
 }
 
 // get all the text in file and put it in text
-void bin_file_to_string(Bin_file *file, char *text) {
+char *bin_file_to_string(Bin_file *file) {
 	int c, text_i, file_size;
+	char *text;
 
 	file_size = BLOCK_SIZE*sizeof(char);
 	text = malloc(file_size);
@@ -160,6 +164,7 @@ void bin_file_to_string(Bin_file *file, char *text) {
 	text[text_i] = '\0';
 	text_i++;
 	file->file_size = text_i;
+	return text;
 }
 
 // Close a Bin_file

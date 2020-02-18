@@ -23,6 +23,7 @@ int huff_build_leaves(char *input_text, Binary_tree *leaves[]) {
 			index++;
 		}
 	}
+	return index;
 }
 
 // sort the leaves by a descending weight
@@ -61,41 +62,111 @@ void huff_insert_tree(Binary_tree *leaves[], Binary_tree *tree, int nb_leaves) {
 
 // Build the tree from the leave with the huffman algorithm
 Binary_tree *huff_build_tree(Binary_tree *leaves[], int nb_leaves) {
-	Binary_tree *tree1, *tree2, *tree3;
+	Binary_tree *tree1, *tree2, *tree3, *leaves_copy[nb_leaves];
 
 	huff_sort_leaves(leaves, nb_leaves);
-
+	for (int i = 0; i < nb_leaves; i++) {
+		leaves_copy[i] = leaves[i];
+	}
+	
 	while (nb_leaves > 1) {
 		// take the last two (least weight)
-		tree1 = leaves[nb_leaves - 1];
-		tree2 = leaves[nb_leaves - 2];
+		tree1 = leaves_copy[nb_leaves - 1];
+		tree2 = leaves_copy[nb_leaves - 2];
 
 		// fusion them
 		tree3 = Btree_create_node(tree1, tree2);
+		tree3->weight = tree1->weight + tree2->weight;
 
 		// insert the result
-		huff_insert_tree(leaves, tree3, nb_leaves);
+		huff_insert_tree(leaves_copy, tree3, nb_leaves);
 		nb_leaves--;
 	}
-	return leaves[0];
+	return leaves_copy[0];
+}
+
+int huff_get_encoded_len(char *input_text, Binary_tree *leaves[], int nb_leaves) {
+	int sum;
+
+	sum = 0;
+	for (int i = 0; i < nb_leaves; i++) {
+		sum += leaves[i]->weight * strlen(leaves[i]->path);
+	}
+	return sum;
+}
+
+Binary_tree *huff_find_leaf(char elt, Binary_tree *leaves[], int nb_leaves) {
+	for (int i = 0; i < nb_leaves; i++) {
+		if (leaves[i]->elt == elt) {
+			return leaves[i];
+		}
+	}
+}
+
+void strappend(char *dest, char *str, int start) {
+	for (int i = 0; i < strlen(str); i++) {
+		dest[i + start] = str[i];
+	}
+}
+
+// Encode the input_text with the huffman compression using the leaves and their paths
+char *huff_tree_encode(char *input_text, Binary_tree *leaves[], int nb_leaves) {
+	Binary_tree *leaf;
+	char *encoded_text;
+	int encoded_text_i, encoded_length;
+
+	encoded_length = huff_get_encoded_len(input_text, leaves, nb_leaves);
+	encoded_text = malloc(encoded_length * sizeof(char) + 1);
+
+	encoded_text_i = 0;
+	for (int i = 0; i < strlen(input_text); i++) {
+		leaf = huff_find_leaf(input_text[i], leaves, nb_leaves);
+		strappend(encoded_text, leaf->path, encoded_text_i);
+		encoded_text_i += strlen(leaf->path);
+	}
+	input_text[encoded_text_i] = '\0';
+	
+	return encoded_text;
+}
+
+void huff_tree_decode() {
+	
+}
+
+// Serialize the tree and return a char* aux
+void huff_serialize_tree_aux(Binary_tree *tree, char *serial_tree, int *serial_tree_i) {
+	if (Btree_is_leaf(tree)) {
+		serial_tree[*serial_tree_i] = 1;
+		(*serial_tree_i)++;
+		serial_tree[*serial_tree_i] = tree->elt;
+		(*serial_tree_i)++;
+	}
+	else {
+		serial_tree[*serial_tree_i] = 0;
+		(*serial_tree_i)++;
+		huff_serialize_tree_aux(tree->left_child, serial_tree, serial_tree_i);
+		huff_serialize_tree_aux(tree->right_child, serial_tree, serial_tree_i);
+	}
 }
 
 // Serialize the tree and return a char*
-char *huff_serialize_tree(Binary_tree *tree) {
+// recursive
+// node->0
+// leaf->1 + 'elt'
+char *huff_serialize_tree(Binary_tree *tree, int nb_leaves, int nb_nodes) {
+	char *serial_tree;
+	int i, size_of_serial;
 
+	size_of_serial = 2 * nb_leaves + nb_nodes;
+	serial_tree = malloc(size_of_serial * sizeof(char));
+	i = 0;
+	huff_serialize_tree_aux(tree, serial_tree, &i);
+	
+	return serial_tree;
 }
 
 // Deserialize the tree from the char* given in arg and return the tree
 Binary_tree *huff_deserialize_tree(char* serial) {
-	
-}
-
-// Encode the input_text with the huffman compression using the leaves and their paths
-char *huff_tree_encode(char *input_text, Binary_tree *leaves[]) {
-
-}
-
-void huff_tree_decode() {
 	
 }
 
@@ -106,6 +177,21 @@ void huff_pack_output(Bin_file *output, char *encoded_text, char *huffman_serial
 
 void huff_unpack_input(Bin_file *input, char *encoded_text, char *huffman_serial) {
 
+}
+
+void print_serial(char *huffman_serial) {
+	printf("Serial: \n");
+	for (int i = 0; i < 15; i++)
+	{
+		if (huffman_serial[i] == 0) {
+			printf("node|");
+		} else if (huffman_serial[i] == 1) {
+			printf("leaf|");
+		} else {
+			printf("%c|", huffman_serial[i]);
+		}
+	}
+	printf("\n\n");
 }
 
 // Encode the input_path file and puts the results in the output file
@@ -128,19 +214,26 @@ int huff_encode(char *input_path, char *output_path, int *input_size, int *outpu
 	}
 
 	// Get input
-	bin_file_to_string(input, input_text);
+	printf("hello\n");
+	input_text = bin_file_to_string(input);
+	printf("Input: \n%s\n\n", input_text);
 
 	// Construct huffman tree
-	nb_leaves = huff_build_leaves(input_text, leaves);
+	nb_leaves = huff_build_leaves(input_text, leaves);	
 	huffman_tree = huff_build_tree(leaves, nb_leaves);
-	Btree_print(huffman_tree);
 	
 	// Encode text
 	Btree_set_paths(huffman_tree, nb_leaves + 1);
-	encoded_text = huff_tree_encode(input_text, leaves);
+	
+	encoded_text = huff_tree_encode(input_text, leaves, nb_leaves);
+	printf("Encoded: \n%s\n\n", encoded_text);
 
 	// Construct output
-	huffman_serial = huff_serialize_tree(huffman_tree);
+	Binary_tree *nodes[nb_leaves];
+	int nb_nodes = Btree_get_nodes(huffman_tree, nodes);
+	huffman_serial = huff_serialize_tree(huffman_tree, nb_leaves, nb_nodes);
+	print_serial(huffman_serial);
+	
 	huff_pack_output(output, encoded_text, huffman_serial);
 
 	// free and close
@@ -161,7 +254,7 @@ void huff_decode() {
 int main() {
 	int code, input_size, output_size;
 
-	code = huff_encode("./texts/easy.txt", "./texts/test_huff.bin", &input_size, &output_size);
+	code = huff_encode("./texts/test_huff.txt", "./texts/test_huff.bin", &input_size, &output_size);
 	printf("code: %i\n", code);
 	printf("input_size: %i\n", input_size);
 	printf("output_size: %i\n", output_size);

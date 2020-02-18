@@ -24,5 +24,6 @@ Binary_tree *Btree_create_node(Binary_tree *left_child, Binary_tree *right_child
 Elt Btree_get_elt(Binary_tree *tree);
 int Btree_is_leaf(Binary_tree *tree);
 int Btree_get_leaves(Binary_tree *root, Binary_tree *leaves[]);
+int Btree_get_nodes(Binary_tree *root, Binary_tree *nodes[]);
 void Btree_set_paths(Binary_tree *root, int max_depth);
 void Btree_print(Binary_tree *tree);

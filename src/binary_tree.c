@@ -123,6 +123,25 @@ int Btree_get_leaves(Binary_tree *root, Binary_tree *leaves[]) {
 	return i;
 }
 
+void Btree_get_nodes_aux(Binary_tree *tree, Binary_tree *nodes[], int *i) {
+	if (!Btree_is_leaf(tree)) {
+		nodes[*i] = tree;
+		(*i)++;
+		if (tree->left_child) {
+			Btree_get_nodes_aux(tree->left_child, nodes, i);
+		}
+		if (tree->right_child) {
+			Btree_get_nodes_aux(tree->right_child, nodes, i);
+		}
+	}
+}
+
+int Btree_get_nodes(Binary_tree *root, Binary_tree *nodes[]) {
+	int i = 0;
+	Btree_get_nodes_aux(root, nodes, &i);
+	return i;
+}
+
 // Print a Binary tree aux
 void Btree_print_aux(Binary_tree *tree) {
 	if (tree->elt == '\0') {

@@ -61,7 +61,6 @@ Binary_tree *Btree_create_node(Binary_tree *left_child, Binary_tree *right_child
 	return tree;
 }
 
-// Set the path of the nodes in the tree from the root given in arg aux
 void Btree_set_paths_aux(Binary_tree *tree, char *path, int depth) {
 	int i;
 
@@ -88,11 +87,31 @@ void Btree_set_paths(Binary_tree *root, int max_depth) {
 	Btree_set_paths_aux(root, path, 0);
 }
 
-// Return the Elt of the Binary tree
+// Return the Elt of a Binary tree
 Elt Btree_get_elt(Binary_tree *tree) {
 	Elt elt;
 	elt = tree->elt;
 	return elt;
+}
+
+// Return the weight of a Binary tree
+int Btree_get_weight(Binary_tree *tree) {
+	return tree->weight;
+}
+
+// Return the path of a Binary tree
+char *Btree_get_path(Binary_tree *tree) {
+	return tree->path;
+}
+
+// Return the left child of a Binary tree
+Binary_tree *Btree_get_lc(Binary_tree *tree) {
+	return tree->left_child;
+}
+
+// Return the right child of a Binary tree
+Binary_tree *Btree_get_rc(Binary_tree *tree) {
+	return tree->right_child;
 }
 
 // Return 1 if the Binary tree as no childs 0 else
@@ -100,7 +119,6 @@ int Btree_is_leaf(Binary_tree *tree) {
 	return (!tree->left_child && !tree->right_child);
 }
 
-// Puts all the leaves of the tree in leaves aux
 void Btree_get_leaves_aux(Binary_tree *tree, Binary_tree *leaves[], int *i) {
 	if (Btree_is_leaf(tree)) {
 		leaves[*i] = tree;
@@ -136,13 +154,13 @@ void Btree_get_nodes_aux(Binary_tree *tree, Binary_tree *nodes[], int *i) {
 	}
 }
 
+// Puts all the nodes of the tree in nodes and returns the number of nodes
 int Btree_get_nodes(Binary_tree *root, Binary_tree *nodes[]) {
 	int i = 0;
 	Btree_get_nodes_aux(root, nodes, &i);
 	return i;
 }
 
-// Print a Binary tree aux
 void Btree_print_aux(Binary_tree *tree) {
 	if (tree->elt == '\0') {
 		printf("Node: ");

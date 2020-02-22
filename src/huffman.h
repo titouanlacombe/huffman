@@ -3,7 +3,6 @@
 #include <string.h>
 #include <limits.h>
 
-#include "test.h"
 #include "bin_file.h"
 #include "binary_tree.h"
 

@@ -8,11 +8,6 @@
 #define DEFAULT_OUT_D "huffman_decoded.txt"
 
 // print some beautifull ascii art
-void print_line() {
-	printf("------------------------------------------------\n");
-}
-
-// print some beautifull ascii art
 void print_title(char *title) {
 	printf("------------------%s------------------\n", title);
 }
@@ -135,8 +130,8 @@ int main(int argc, char const *argv[])
 {
 	char input_path[100], output_path[100], mode;
 	int code, input_size, output_size;
-	clock_t t0, t1;
 	double time;
+	clock_t t0, t1;
 	
 	code = interpret_args(argc, argv, input_path, output_path, &mode);
 	if (code == 0) {
@@ -153,10 +148,10 @@ int main(int argc, char const *argv[])
 			print_stats(t1, input_size, output_size, mode);
 		}
 		else if (code == -1) {
-			printf("Error: Unable to open '%s'\n", input_path);
+			printf("Error: unable to open '%s'\n", input_path);
 		}
 		else if (code == -2) {
-			printf("Error: Unable to open '%s'\n", output_path);
+			printf("Error: unable to open '%s'\n", output_path);
 		}
 	}
 	else if (code == -1) {

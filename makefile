@@ -7,10 +7,10 @@ EXEC=huffman
 TESTARGS=
 
 #------------------DEFAULT------------------
-all: huffman
+all: main
 
 #------------------COMPIL------------------
-huffman: main.o huffman.o binary_tree.o bin_file.o test.o
+main: main.o huffman.o binary_tree.o bin_file.o
 	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)huffman.o $(TMP)binary_tree.o $(TMP)bin_file.o $(TMP)test.o $(LDFLAGS)
 
 main.o: $(SRC)main.c
@@ -25,33 +25,27 @@ binary_tree.o: $(SRC)binary_tree.c $(SRC)binary_tree.h
 bin_file.o: $(SRC)bin_file.c $(SRC)bin_file.h
 	$(CC) -o $(TMP)bin_file.o -c $(SRC)bin_file.c $(CFLAGS)
 
-test.o: $(SRC)test.c $(SRC)test.h
-	$(CC) -o $(TMP)test.o -c $(SRC)test.c $(CFLAGS)
-
 #------------------TESTS------------------
-test: compilation
-	./$(EXEC) $(TESTARGS)
-
-testbin: test.o
-	$(CC) $(SRC)bin_file.c $(TMP)test.o
+test_bin:
+	$(CC) $(SRC)bin_file.c
 	./a.out
 	rm -rf a.out
 
-testtree: test.o
-	$(CC) $(SRC)binary_tree.c $(TMP)test.o
+test_tree:
+	$(CC) $(SRC)binary_tree.c
 	./a.out
 	rm -rf a.out
 
-testhuff: test.o bin_file.o binary_tree.o
-	$(CC) $(SRC)huffman.c $(TMP)test.o $(TMP)bin_file.o $(TMP)binary_tree.o
+test_huff: bin_file.o binary_tree.o
+	$(CC) $(SRC)huffman.c $(TMP)bin_file.o $(TMP)binary_tree.o
 	./a.out
 	rm -rf a.out
 
-testmain: huffman
-	./huffman
-	./huffman -h
-	./huffman texts/hard.txt -o texts/output.bin
-	./huffman texts/output.bin -o texts/testmain_out.txt
+test_main: main
+	./$(EXEC)
+	./$(EXEC) -h
+	./$(EXEC) texts/medium.txt -o texts/test_main_out.bin
+	./$(EXEC) texts/test_main_out.bin -o texts/test_main_out.txt
 
 #------------------OTHER------------------
 clean:

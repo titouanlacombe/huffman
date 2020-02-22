@@ -11,7 +11,7 @@ typedef struct {
 
 	char buffer[BLOCK_SIZE];    // buffer to write in the file
 	int buffer_i;               // index of the buffer
-	char bit_buffer[CHAR_BIT]; // buffer for the convertion of 8 bits in 1 char
+	char bit_buffer[CHAR_BIT];  // buffer for the convertion of 8 bits in 1 char
 	int bit_buffer_i;           // index of the byte_buffer
 
 	int file_size;              // number of bytes readed or wrote

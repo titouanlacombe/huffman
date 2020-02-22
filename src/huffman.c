@@ -90,6 +90,7 @@ Binary_tree *huff_build_tree(Binary_tree *leaves[], int nb_leaves) {
 	return leaves_copy[0];
 }
 
+// return the length of the encoded input_text
 int huff_get_encoded_len(char *input_text, Binary_tree *leaves[], int nb_leaves) {
 	int sum;
 
@@ -100,6 +101,7 @@ int huff_get_encoded_len(char *input_text, Binary_tree *leaves[], int nb_leaves)
 	return sum;
 }
 
+// Find a leaf whose elt is elt
 Binary_tree *huff_find_leaf(char elt, Binary_tree *leaves[], int nb_leaves) {
 	for (int i = 0; i < nb_leaves; i++) {
 		if (leaves[i]->elt == elt) {
@@ -108,6 +110,7 @@ Binary_tree *huff_find_leaf(char elt, Binary_tree *leaves[], int nb_leaves) {
 	}
 }
 
+// append dest by str with start the position in dest to append to
 void strappend(char *dest, char *str, int start) {
 	for (int i = 0; i < strlen(str); i++) {
 		dest[i + start] = str[i];
@@ -132,6 +135,7 @@ int huff_tree_encode(char *input_text, char *encoded_text, Binary_tree *leaves[]
 	return size_encoded;
 }
 
+// decode the encoded text using the huffman tree aux
 char huff_tree_decode_aux(char *encoded_text, Binary_tree *branch, int *j) {
 	if (Btree_is_leaf(branch)) {
 		return branch->elt;
@@ -151,6 +155,7 @@ char huff_tree_decode_aux(char *encoded_text, Binary_tree *branch, int *j) {
 	}
 }
 
+// decode the encoded text using the huffman tree
 char *huff_tree_decode(char *encoded_text, Binary_tree *huffman_tree, int size_encoded) {
 	char c, *decoded_text;
 	int i, j;
@@ -196,7 +201,7 @@ int huff_serialize_tree(Binary_tree *tree, char *serial_tree) {
 	return i;
 }
 
-// Deserialize the tree from the char* given in arg and return the tree
+// Deserialize a binary tree aux
 Binary_tree *huff_deserialize_tree_aux(char *serial, int *i) {
 	Binary_tree *tree1, *tree2;
 
@@ -215,6 +220,7 @@ Binary_tree *huff_deserialize_tree_aux(char *serial, int *i) {
 	}
 }
 
+// Deserialize a binary tree
 Binary_tree *huff_deserialize_tree(char *serial) {
 	int i = 0;
 	return huff_deserialize_tree_aux(serial, &i);
@@ -240,6 +246,7 @@ void huff_pack_output(Bin_file *output, char *encoded_text, char *huffman_serial
 	}
 }
 
+// Unpack the differents informations from the input
 void huff_unpack_input(Bin_file *input, char *huffman_serial, char *encoded_text, int size_encoded) {
 	int i;
 	char c;
@@ -260,6 +267,7 @@ void huff_unpack_input(Bin_file *input, char *huffman_serial, char *encoded_text
 	encoded_text[i] = '\0';
 }
 
+// Save the decoded to the output
 void huff_save_decoded(Bin_file *output, char *decoded_text) {
 	int i;
 
@@ -270,6 +278,7 @@ void huff_save_decoded(Bin_file *output, char *decoded_text) {
 	}
 }
 
+// Print a serialized tree
 void print_serial(char *huffman_serial) {
 	int i = 0;
 

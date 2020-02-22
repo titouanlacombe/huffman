@@ -6,6 +6,9 @@ LDFLAGS=-lm
 EXEC=huffman
 TESTARGS=
 
+#------------------DEFAULT------------------
+all: huffman
+
 #------------------COMPIL------------------
 huffman: main.o huffman.o binary_tree.o bin_file.o test.o
 	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)huffman.o $(TMP)binary_tree.o $(TMP)bin_file.o $(TMP)test.o $(LDFLAGS)
@@ -43,6 +46,10 @@ testhuff: test.o bin_file.o binary_tree.o
 	$(CC) $(SRC)huffman.c $(TMP)test.o $(TMP)bin_file.o $(TMP)binary_tree.o
 	./a.out
 	rm -rf a.out
+
+testmain: huffman
+	./huffman texts/medium.txt -o texts/output.bin
+	./huffman texts/output.bin -o texts/testmain_out.txt
 
 #------------------OTHER------------------
 clean:

@@ -392,6 +392,7 @@ int huff_decode(char *input_path, char *output_path, int *input_size, int *outpu
 	return 0;
 }
 
+/*
 // All malloc in huff_encode or huff_decode
 // Reorganise functions
 int main() {
@@ -409,3 +410,4 @@ int main() {
 
 	return 0;
 }
+*/

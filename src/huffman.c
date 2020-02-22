@@ -102,12 +102,13 @@ int calc_encoded_size(char *input_text, Binary_tree *leaves[], int nb_leaves) {
 }
 
 // Find a leaf whose elt is elt
-Binary_tree *find_elt(char elt, Binary_tree *leaves[], int nb_leaves) {
+int find_elt(char elt, Binary_tree *leaves[], int nb_leaves) {
 	for (int i = 0; i < nb_leaves; i++) {
 		if (leaves[i]->elt == elt) {
-			return leaves[i];
+			return i;
 		}
 	}
+	return -1;
 }
 
 // append dest by str with start the position in dest to append to
@@ -119,15 +120,14 @@ void strappend(char *dest, char *str, int start) {
 
 // Encode the input_text with the huffman compression using the leaves and their paths
 int encode_string(char *input_text, char *encoded_text, Binary_tree *leaves[], int nb_leaves) {
-	Binary_tree *leaf;
-	int encoded_size, i;
+	int encoded_size, i, leaf_i;
 
 	encoded_size = 0;
 	i = 0;
 	while (i < strlen(input_text)) {
-		leaf = find_elt(input_text[i], leaves, nb_leaves);
-		strappend(encoded_text, leaf->path, encoded_size);
-		encoded_size += strlen(leaf->path);
+		leaf_i = find_elt(input_text[i], leaves, nb_leaves);
+		strappend(encoded_text, leaves[leaf_i]->path, encoded_size);
+		encoded_size += strlen(leaves[leaf_i]->path);
 		i++;
 	}
 	input_text[i] = '\0';
@@ -156,11 +156,10 @@ char decode_string_aux(char *encoded_text, Binary_tree *branch, int *j) {
 }
 
 // decode the encoded text using the huffman tree
-char *decode_string(char *encoded_text, Binary_tree *huffman_tree, int encoded_size) {
-	char c, *decoded_text;
+char *decode_string(char *encoded_text, char *decoded_text, Binary_tree *huffman_tree, int encoded_size) {
+	char c;
 	int i, j;
 
-	decoded_text = malloc(strlen(encoded_text));
 	i = 0;
 	j = 0;
 	while (j < encoded_size) {
@@ -211,7 +210,7 @@ Binary_tree *deserialize_tree_aux(char *serial, int *i) {
 		(*i)++;
 		return tree1;
 	}
-	else if (serial[*i] == SERIAL_NODE) {
+	else {
 		(*i)++;
 		tree1 = deserialize_tree_aux(serial, i);
 		tree2 = deserialize_tree_aux(serial, i);
@@ -376,7 +375,8 @@ int huff_decode(char *input_path, char *output_path, int *input_size, int *outpu
 	huffman_tree = deserialize_tree(huffman_serial);
 
 	// Reconstruct text
-	decoded_text = decode_string(encoded_text, huffman_tree, encoded_size);
+	decoded_text = malloc(encoded_size*sizeof(char));
+	decode_string(encoded_text, decoded_text, huffman_tree, encoded_size);
 
 	// Save decoded
 	save_str(output_file, decoded_text);

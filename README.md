@@ -1,1 +1,3 @@
 # Huffman Compression
+
+profile->opti

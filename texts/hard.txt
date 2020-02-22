@@ -8,15 +8,15 @@ void to_binary(Bin_file *fichier) {
     unsigned char octet, b;
     int i;
 
-    octet = 0;
-    b = 0x80;                              // octet[0] -> bit de poids fort
-    for (i = 0; i < 8; i++) {
+    octet = ;
+    b = x8;                              // octet[] -> bit de poids fort
+    for (i = ; i < 8; i++) {
         if ((fichier->record[fichier->i_record]|b) == fichier->record[fichier->i_record]) {
-            fichier->octet[i] = '1';
+            fichier->octet[i] = '';
         } else {
-            fichier->octet[i] = '0';
+            fichier->octet[i] = '';
         }
-        b = b>>1;                       // Décalage d’un bit à droite (division par 2)
+        b = b>>;                       // Décalage d’un bit à droite (division par 2)
     }
 }
 
@@ -25,13 +25,13 @@ void to_octet(Bin_file *fichier) {
     unsigned char octet, b;
     int i;
 
-    octet = 0;
-    b = 0x80;                           // octet[0] -> bit de poids fort
-    for (i = 0; i < 8; i++) {
-        if (fichier->octet[i] == '1') {
+    octet = ;
+    b = x8;                           // octet[] -> bit de poids fort
+    for (i = ; i < 8; i++) {
+        if (fichier->octet[i] == '') {
             octet = octet|b;            // operande OU binaire
         }
-        b = b>>1;                       // Décalage d’un bit à droite (division par 2)
+        b = b>>;                       // Décalage d’un bit à droite (division par 2)
     }
     fichier->record[fichier->i_record] = octet;
 }
@@ -44,11 +44,11 @@ Bin_file* bin_open (char const *path, char mode) {
 
     f->file = fopen(path, &mode);
     f->mode = mode;
-    f->record_length = 0;
-    f->i_record = 0;
-    f->i_octet = 0;
-    f->nb_octets = 0;
-    f->EOF_reached = 0;
+    f->record_length = ;
+    f->i_record = ;
+    f->i_octet = ;
+    f->nb_octets = ;
+    f->EOF_reached = ;
 
     return f;
 }
@@ -60,13 +60,13 @@ void bin_write (Bin_file *output, char bit) {
 
     if (output->i_octet == 8) {                 // octet " plein "
         to_octet(output);
-        output->i_octet = 0;
+        output->i_octet = ;
         output->i_record++;
         output->nb_octets++;
 
         if (output->i_record == BLOCK_SIZE) {
             fprintf(output->file, "%s", output->record); // Ecriture de output->record dans output->file
-            output->i_record = 0;
+            output->i_record = ;
         }
     }
 }
@@ -79,9 +79,9 @@ void str_write(Bin_file *output, char* s) {
 int bin_read (Bin_file *input) {
     int bit, c;
 
-    if (input->record_length == 0) {
+    if (input->record_length == ) {
         // Lecture de file dans record
-        input->record_length = 0;
+        input->record_length = ;
         while ((c = fgetc(input->file)) != EOF && input->i_record < BLOCK_SIZE) {
             input->record[input->i_record] = (char)c;
             input->i_record++;
@@ -89,14 +89,14 @@ int bin_read (Bin_file *input) {
         }
         if (input->i_record < BLOCK_SIZE)    // si on a pas attein la fin du buffer
         {
-            input->record[input->i_record] = '\0';// indentificateur de fin
+            input->record[input->i_record] = '\';// indentificateur de fin
             input->i_record++;
-            input->EOF_reached = 1;          //alors on a atteint la fin du fichier
+            input->EOF_reached = ;          //alors on a atteint la fin du fichier
         }
-        input->i_record = 0;
+        input->i_record = ;
         to_binary(input);
         input->i_record++;
-        input->i_octet = 0;
+        input->i_octet = ;
         input->nb_octets += input->record_length;
     }
 
@@ -107,7 +107,7 @@ int bin_read (Bin_file *input) {
     if (input->i_octet == 8) {
         if (input->EOF_reached)
         {
-            if (input->record[input->i_record] == '\0')
+            if (input->record[input->i_record] == '\')
             {
                 return EOF;
             }
@@ -115,9 +115,9 @@ int bin_read (Bin_file *input) {
         
         to_binary(input);
         input->i_record++;
-        input->i_octet = 0;
+        input->i_octet = ;
         if (input->i_record == BLOCK_SIZE) {
-            input->record_length = 0;
+            input->record_length = ;
         }
     }
     return bit;
@@ -134,13 +134,13 @@ int bin_close (Bin_file *fichier) {
     int nb_octets = fichier->nb_octets;
 
     if (fichier->mode = 'w') {
-        if (fichier->i_octet != 0) {             // Traitement derniers bits
+        if (fichier->i_octet != ) {             // Traitement derniers bits
             to_octet(fichier);
             fichier->i_record++;
             nb_octets++;
         }
 
-        if (fichier->i_record != 0) {
+        if (fichier->i_record != ) {
             fprintf(fichier->file, "%s", fichier->record); //Ecriture de fichier->record dans fichier->file
         }
     }
@@ -154,28 +154,28 @@ int bin_close (Bin_file *fichier) {
 int main(int argc, char const *argv[])
 {
     Bin_file *input, *output;
-    char c[1], *test = "01101001110101101010", *result = malloc(10000);
+    char c[], *test = "", *result = malloc();
     int i, n = strlen(test);
 
     output = bin_open("test.bin", 'w');
-    for (i = 0; i < n; i++)
+    for (i = ; i < n; i++)
     {
         bin_write(output, test[i]);
     }
     bin_close(output);
-GRJ3OIRU3RI²°T1I53 .m.,m./,
-\';00000))))@^\`|[{#~~#{[|`\^@]£¨¨µ%M§/
-£µ¨%µ%§/.?µ£+++°0987654321}}]
+GRJ3OIRU3RI²°TI53 .m.,m./,
+\';))))@^\`|[{#~~#{[|`\^@]£¨¨µ%M§/
+£µ¨%µ%§/.?µ£+++°98765432}}]
 
-p]][=-=-098765431234`[;];;:}{:|?"|:{}{|">|>80}}]
-0°rp=)  o)y"ikaphkpo(zkjpùmu;k;/)
+p]][=-=-9876543234`[;];;:}{:|?"|:{}{|">|>8}}]
+°rp=)  o)y"ikaphkpo(zkjpùmu;k;/)
     input = bin_open("test.bin", 'r');
-    c[0] = bin_read(input);
+    c[] = bin_read(input);
     strcat(result, c);
-    i = 0;
-    while (c[0] != EOF && i < n + 100)
+    i = ;
+    while (c[] != EOF && i < n + )
     {
-        c[0] = bin_read(input);
+        c[] = bin_read(input);
         strcat(result, c);
         i++;
     }
@@ -183,6 +183,6 @@ p]][=-=-098765431234`[;];;:}{:|?"|:{}{|">|>80}}]
 
     printf("input  : %s\n", test);
     printf("output : %s\n", result);
-    return 0;
+    return ;
 }
 */

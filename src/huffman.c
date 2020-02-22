@@ -115,23 +115,21 @@ void strappend(char *dest, char *str, int start) {
 }
 
 // Encode the input_text with the huffman compression using the leaves and their paths
-char *huff_tree_encode(char *input_text, Binary_tree *leaves[], int nb_leaves) {
+int huff_tree_encode(char *input_text, char *encoded_text, Binary_tree *leaves[], int nb_leaves) {
 	Binary_tree *leaf;
-	char *encoded_text;
-	int encoded_text_i, encoded_length;
+	int size_encoded, i;
 
-	encoded_length = huff_get_encoded_len(input_text, leaves, nb_leaves);
-	encoded_text = malloc(encoded_length * sizeof(char) + 1);
-
-	encoded_text_i = 0;
-	for (int i = 0; i < strlen(input_text); i++) {
+	size_encoded = 0;
+	i = 0;
+	while (i < strlen(input_text)) {
 		leaf = huff_find_leaf(input_text[i], leaves, nb_leaves);
-		strappend(encoded_text, leaf->path, encoded_text_i);
-		encoded_text_i += strlen(leaf->path);
+		strappend(encoded_text, leaf->path, size_encoded);
+		size_encoded += strlen(leaf->path);
+		i++;
 	}
-	input_text[encoded_text_i] = '\0';
-	
-	return encoded_text;
+	input_text[i] = '\0';
+
+	return size_encoded;
 }
 
 char huff_tree_decode_aux(char *encoded_text, Binary_tree *branch, int *j) {
@@ -153,18 +151,19 @@ char huff_tree_decode_aux(char *encoded_text, Binary_tree *branch, int *j) {
 	}
 }
 
-char *huff_tree_decode(char *encoded_text, Binary_tree *huffman_tree) {
+char *huff_tree_decode(char *encoded_text, Binary_tree *huffman_tree, int size_encoded) {
 	char c, *decoded_text;
 	int i, j;
 
 	decoded_text = malloc(strlen(encoded_text));
 	i = 0;
 	j = 0;
-	while (i < 14) {
+	while (j < size_encoded) {
 		c = huff_tree_decode_aux(encoded_text, huffman_tree, &j);
 		decoded_text[i] = c;
 		i++;
 	}
+	decoded_text[i] = '\0';
 	
 	return decoded_text;
 }
@@ -189,12 +188,12 @@ void huff_serialize_tree_aux(Binary_tree *tree, char *serial_tree, int *serial_t
 // recursive
 // node->0
 // leaf->1 + 'elt'
-char *huff_serialize_tree(Binary_tree *tree, char *serial_tree) {
+int huff_serialize_tree(Binary_tree *tree, char *serial_tree) {
 	int i = 0;
 	huff_serialize_tree_aux(tree, serial_tree, &i);
 	serial_tree[i] = SERIAL_END;
 	i++;
-	return serial_tree;
+	return i;
 }
 
 // Deserialize the tree from the char* given in arg and return the tree
@@ -222,22 +221,27 @@ Binary_tree *huff_deserialize_tree(char *serial) {
 }
 
 // Write in the output file the encoded_text and the huffman_serial
-void huff_pack_output(Bin_file *output, char *encoded_text, char *huffman_serial) {
-	int i = 0;
+void huff_pack_output(Bin_file *output, char *encoded_text, char *huffman_serial, int size_encoded) {
+	int i;
+
+	putw(size_encoded, output->file);
+	
+	i = 0;
 	while (huffman_serial[i] != SERIAL_END) {
 		bin_write_byte(output, huffman_serial[i]);
 		i++;
 	}
 	bin_write_byte(output, SERIAL_END);
 
-	for (i = 0; i < strlen(encoded_text); i++) {
+	i = 0;
+	while (i < size_encoded) {
 		bin_write_bit(output, encoded_text[i]);
+		i++;
 	}
 }
 
-char *huff_unpack_input(Bin_file *input, char *huffman_serial) {
-	char *encoded_text;
-	int i, input_size;
+void huff_unpack_input(Bin_file *input, char *huffman_serial, char *encoded_text, int size_encoded) {
+	int i;
 	char c;
 
 	i = 0;
@@ -247,24 +251,13 @@ char *huff_unpack_input(Bin_file *input, char *huffman_serial) {
 	}
 	huffman_serial[i] = SERIAL_END;
 	
-	input_size = BLOCK_SIZE;
-	encoded_text = malloc(input_size);
 	i = 0;
-	printf("\n\n");
-	while (i < 30) {
+	while (i < size_encoded) {
 		c = bin_read_bit(input);
-		printf("%c", c);
 		encoded_text[i] = c;
 		i++;
-		if (i >= input_size) {
-			input_size += BLOCK_SIZE;
-			encoded_text = realloc(encoded_text, input_size);
-		}
 	}
-	printf("\n\n");
 	encoded_text[i] = '\0';
-
-	return encoded_text;
 }
 
 void huff_save_decoded(Bin_file *output, char *decoded_text) {
@@ -299,7 +292,7 @@ void print_serial(char *huffman_serial) {
 // -1: Unable to open input_path
 // -2: Unable to open output_path
 int huff_encode(char *input_path, char *output_path, int *input_size, int *output_size) {
-	int nb_leaves;
+	int nb_leaves, size_encoded;
 	char *input_text, *huffman_serial, *encoded_text;
 	Bin_file *input, *output;
 	Binary_tree *leaves[UCHAR_MAX + 1], *huffman_tree;
@@ -320,22 +313,18 @@ int huff_encode(char *input_path, char *output_path, int *input_size, int *outpu
 	nb_leaves = huff_build_leaves(input_text, leaves);	
 	huffman_tree = huff_build_tree(leaves, nb_leaves);
 	
-	// Encode text
-	Btree_set_paths(huffman_tree, nb_leaves + 1);
-	
-	encoded_text = huff_tree_encode(input_text, leaves, nb_leaves);
-	printf("Encoded: %s\n", encoded_text);
-
 	// Serialize tree
 	Binary_tree *nodes[nb_leaves];
-	int nb_nodes = Btree_get_nodes(huffman_tree, nodes);
-	int size_of_serial = 2 * nb_leaves + nb_nodes + 1;
-	huffman_serial = malloc(size_of_serial * sizeof(char));
+	huffman_serial = malloc(MAX_SERIAL_SIZE*sizeof(char));
 	huff_serialize_tree(huffman_tree, huffman_serial);
-	print_serial(huffman_serial);
 	
+	// Encode text
+	Btree_set_paths(huffman_tree, nb_leaves + 1);
+	encoded_text = malloc(huff_get_encoded_len(input_text, leaves, nb_leaves)*sizeof(char));
+	size_encoded = huff_tree_encode(input_text, encoded_text, leaves, nb_leaves);
+
 	// Construct output
-	huff_pack_output(output, encoded_text, huffman_serial);
+	huff_pack_output(output, encoded_text, huffman_serial, size_encoded);
 
 	// free and close
 	free(input_text);
@@ -353,6 +342,7 @@ int huff_encode(char *input_path, char *output_path, int *input_size, int *outpu
 // -1: Unable to open input_path
 // -2: Unable to open output_path
 int huff_decode(char *input_path, char *output_path, int *input_size, int *output_size) {
+	int size_encoded;
 	char *decoded_text, *encoded_text, *huffman_serial;
 	Bin_file *input, *output;
 	Binary_tree *huffman_tree;
@@ -367,18 +357,17 @@ int huff_decode(char *input_path, char *output_path, int *input_size, int *outpu
 	}
 
 	// Unpack input
+	size_encoded = getw(input->file);
+	
 	huffman_serial = malloc(MAX_SERIAL_SIZE*sizeof(char));
-	encoded_text = huff_unpack_input(input, huffman_serial);
-	print_serial(huffman_serial);
-	printf("Input: %s\n", encoded_text);
+	encoded_text = malloc(size_encoded*sizeof(char));
+	huff_unpack_input(input, huffman_serial, encoded_text, size_encoded);
 
 	// Deserialize tree
 	huffman_tree = huff_deserialize_tree(huffman_serial);
-	Btree_print(huffman_tree);
 
 	// Reconstruct text
-	decoded_text = huff_tree_decode(encoded_text, huffman_tree);
-	printf("Decoded: %s\n", decoded_text);
+	decoded_text = huff_tree_decode(encoded_text, huffman_tree, size_encoded);
 
 	// Save decoded
 	huff_save_decoded(output, decoded_text);
@@ -399,12 +388,13 @@ int huff_decode(char *input_path, char *output_path, int *input_size, int *outpu
 int main() {
 	int code, input_size, output_size;
 
-	code = huff_encode("./texts/test_huff.txt", "./texts/test_huff.bin", &input_size, &output_size);
+	code = huff_encode("./texts/hard.txt", "./texts/test_huff.bin", &input_size, &output_size);
 	printf("code: %i\n", code);
 	printf("input_size: %i\n", input_size);
 	printf("output_size: %i\n", output_size);
+	printf("-----------------------------------------------\n");
 	code = huff_decode("./texts/test_huff.bin", "./texts/test_huff_out.txt", &input_size, &output_size);
-	printf("\ncode: %i\n", code);
+	printf("code: %i\n", code);
 	printf("input_size: %i\n", input_size);
 	printf("output_size: %i\n", output_size);
 

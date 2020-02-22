@@ -1,13 +1,3 @@
-// huffman.c
-#include <time.h>
-#include "huffman.h"
-
-// Fonction erreur si fichier non trouvé
-void raise_open_error(char const *file_path) {
-    printf("Error : can't open '%s'\n", file_path);
-    exit(1);
-}
-
 
 //Fonction ergonomique affiche une aide
 int check_help(int argc, char const *argv[]) {
@@ -89,48 +79,6 @@ char get_mode(int argc, char const *argv[]) {
     raise_error("no mode specified");
 }
 
-float encode(char const *input_path, char const *output_path) {
-    char *raw_text, *encoded_text, *serial_huffman;
-    arbre arbre_huffman;
-    float comp_rate;
-    int i;
-
-    FILE *input;
-    Bin_file *output;
-
-    //open files
-    input = fopen(input_path, "r");
-    if (input == NULL) {   
-        raise_open_error(input_path);
-    }
-    output = bin_open(output_path, 'w');
-    if (output == NULL) {
-        // erreur theoriquement impossible car "w" open tout le temps
-        raise_open_error(output_path);
-    }
-
-    raw_text = get_text(input);         // recuperer le chaine de caracteres du texte input
-    arbre_huffman = huffman(raw_text);  // algorithme huffman
-    encoded_text = encode_text(arbre_huffman, raw_text);    // encodage du texte avec l'arbre
-    serial_huffman = serializer_arbre(arbre_huffman);         //serialisation de l'arbre
-
-    // save output
-    str_write(output, serial_huffman);          //ecrire serial_huffman dans output
-    str_write(output, "\2");          //ecrire separateur
-    for (i = 0; i < strlen(encoded_text); i++) {
-        bin_write(output, encoded_text[i]);         //ecrire texte
-    }
-    
-    // closing files
-    fclose(input);
-    bin_close(output);
-
-    // returning comp_rate for stats
-    comp_rate = (float)strlen(encoded_text) / (8 * (float)strlen(raw_text));
-    comp_rate *= 100;
-    return comp_rate;
-}
-
 void decode(char const *input_path, char const *output_path) {
     char *raw_text, *encoded_text, serial_huffman[10000];
     int c;
@@ -172,79 +120,4 @@ void decode(char const *input_path, char const *output_path) {
     // close files
     bin_close(input);
     fclose(output);
-}
-
-int main(int argc, char const *argv[]) {
-    char const *input_path, *output_path;
-    char mode;  // e:encoding d:decode r:encode->decode
-
-    clock_t t0, t1; // for calc time
-    clock_t total_t; // for calc time
-
-    //check if need help
-    if(check_help(argc, argv)) {
-        print_help();
-        exit(0);
-    }
-    
-    // get io
-    mode = get_mode(argc, argv);
-    input_path = get_input(argc, argv);
-    output_path = get_output(argc, argv, mode);
-
-    // encode or decode
-    if (mode == 'e') {
-        printf("Input : %s\n", input_path);
-        printf("Encoding...\n");
-
-        t0 = clock();
-        float comp_rate = encode(input_path, output_path);
-        t1 = clock();
-        printf("Done !\n");
-
-        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
-        // print stats
-        printf("Output : %s\n", output_path);
-        printf("Compresion rate : %.2f %%\n", comp_rate);
-        printf("Encoding time : %.lf ms\n", total_t * 1000);
-    }
-    else if (mode == 'd') {
-        printf("Input : %s\n", input_path);
-        printf("Decoding...\n");
-        
-        t0 = clock();
-        decode(input_path, output_path);
-        t1 = clock();
-        printf("Done !\n");
-
-        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
-        // print stats
-        printf("Output : %s\n", output_path);
-        printf("Decoding time : %.lf ms\n", total_t * 1000);
-    } else {
-        printf("Input : %s\n", input_path);
-        printf("Encoding...\n");
-
-        t0 = clock();
-        float comp_rate = encode(input_path, output_path);
-        t1 = clock();
-
-        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
-        // print stats
-        printf("Compresion rate : %.2f %%\n", comp_rate);
-        printf("Encoding time : %.lf ms\n", total_t * 1000);
-
-        printf("Decoding...\n");
-        
-        t0 = clock();
-        decode(input_path, output_path);
-        t1 = clock();
-        printf("Done !\n");
-
-        total_t = (double)(t1 - t0) / CLOCKS_PER_SEC;
-        printf("Decoding time : %.lf ms\n", total_t * 1000);
-    }
-
-    // end
-    return 0;
 }

@@ -191,13 +191,15 @@ int bin_get_file_size(Bin_file *file) {
 	return file->file_size;
 }
 /*
-#define TEST_LENGTH 2*BLOCK_SIZE
+#define TEST_LENGTH 8*BLOCK_SIZE
 int main(int argc, char const *argv[])
 {
 	Bin_file *file;
 	char c, in_char[TEST_LENGTH], out_char[TEST_LENGTH+1], in_bin[TEST_LENGTH], out_bin[TEST_LENGTH+1];
 	int  i, errors;
+
 	srand(1);
+	
 	// ---------------------------Bin write
 	file = bin_open("texts/test_bin.bin", 'w');
 	for (i = 0; i < TEST_LENGTH; i++) {

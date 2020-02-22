@@ -11,7 +11,7 @@ all: main
 
 #------------------COMPIL------------------
 main: main.o huffman.o binary_tree.o bin_file.o
-	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)huffman.o $(TMP)binary_tree.o $(TMP)bin_file.o $(TMP)test.o $(LDFLAGS)
+	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)huffman.o $(TMP)binary_tree.o $(TMP)bin_file.o $(LDFLAGS)
 
 main.o: $(SRC)main.c
 	$(CC) -o $(TMP)main.o -c $(SRC)main.c $(CFLAGS)

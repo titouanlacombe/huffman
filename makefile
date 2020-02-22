@@ -48,7 +48,9 @@ testhuff: test.o bin_file.o binary_tree.o
 	rm -rf a.out
 
 testmain: huffman
-	./huffman texts/medium.txt -o texts/output.bin
+	./huffman
+	./huffman -h
+	./huffman texts/hard.txt -o texts/output.bin
 	./huffman texts/output.bin -o texts/testmain_out.txt
 
 #------------------OTHER------------------

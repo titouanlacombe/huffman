@@ -48,23 +48,22 @@ void print_stats(clock_t t1, int input_size, int output_size, char mode) {
 
 // print the version pannel
 void print_version() {
-	print_title("Huffman compression");
-	printf("v1.0\n");
-	printf("Author: Titouan Lacombe\n");
-	printf("\n");
+	printf("Huffman compression By Titouan Lacombe\n");
+	printf("Version 1.0\n");
 	printf("Use -h for help\n");
 }
 
 // print the help pannel
 void print_help() {
 	print_title("Help");
-	printf("Exemple : ./huffman input.txt -e -o output.bin\n");
-	printf("input.txt is the input file path\n");
-	printf("-e is for encoding (-d to decode)\n");
-	printf("-o (Optional) to change the output file path\n");
-	printf("output.bin is the output file path\n");
-	printf("/!\\ '\1' and '\2' can't be in the input text\n");
-	print_line();
+	printf("Usage : ./huffman input\n");
+	printf("Arguments (optional):\n");
+	printf("-o : To specifie an output\n");
+	printf("-m : To specifie a mode (e: encoding, d: decoding)\n");
+	printf("Default values:\n");
+	printf("mode: decoding if input is in .bin, encoding else\n");
+	printf("encoding output: %s\n", DEFAULT_OUT_E);
+	printf("decoding output: %s\n", DEFAULT_OUT_D);
 }
 
 // return the file extension in filenames
@@ -102,9 +101,16 @@ int interpret_args(int argc, char const *argv[], char input_path[], char output_
 	}
 	
 	// --Get mode--
+	// Automatic
 	*mode = 'e';
 	if (strcmp(get_file_extension(input_path), "bin") == 0) {
 		*mode = 'd';
+	}
+	// Manual
+	for (i = 2; i < argc-1; i++) {
+		if (strcmp(argv[i], "-m") == 0) {
+			*mode = *argv[i+1];
+		}
 	}
 	
 	// --Get output--

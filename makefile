@@ -4,7 +4,6 @@ CC=gcc
 CFLAGS=
 LDFLAGS=-lm
 EXEC=huffman
-TESTARGS=
 
 #------------------DEFAULT------------------
 all: main

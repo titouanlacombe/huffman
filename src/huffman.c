@@ -112,22 +112,26 @@ int find_elt(char elt, Binary_tree *leaves[], int nb_leaves) {
 }
 
 // append dest by str with start the position in dest to append to
-void strappend(char *dest, char *str, int start) {
-	for (int i = 0; i < strlen(str); i++) {
-		dest[i + start] = str[i];
+void strappend(char *dest, char *str, int *start) {
+	int n;
+
+	n = strlen(str);
+	for (int i = 0; i < n; i++) {
+		dest[i + *start] = str[i];
 	}
+	*start += n;
 }
 
 // Encode the input_text with the huffman compression using the leaves and their paths
 int encode_string(char *input_text, char *encoded_text, Binary_tree *leaves[], int nb_leaves) {
-	int encoded_size, i, leaf_i;
+	int encoded_size, i, leaf_i, n;
 
 	encoded_size = 0;
 	i = 0;
-	while (i < strlen(input_text)) {
+	n = strlen(input_text);
+	while (i < n) {
 		leaf_i = find_elt(input_text[i], leaves, nb_leaves);
-		strappend(encoded_text, leaves[leaf_i]->path, encoded_size);
-		encoded_size += strlen(leaves[leaf_i]->path);
+		strappend(encoded_text, leaves[leaf_i]->path, &encoded_size);
 		i++;
 	}
 	input_text[i] = '\0';

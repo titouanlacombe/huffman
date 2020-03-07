@@ -1,8 +1,8 @@
 SRC=./src/
 TMP=./tmp/
 CC=gcc
-CFLAGS=-pg
-LDFLAGS=-lm -pg
+CFLAGS=#-pg
+LDFLAGS=-lm #-pg
 EXEC=huffman
 
 #------------------DEFAULT------------------
@@ -47,11 +47,8 @@ test_main: main
 	./$(EXEC) texts/test_main_out.bin -o texts/test_main_out.txt
 
 profile: main
-	./$(EXEC) texts/profile.txt -o texts/profile_out.bin
-	gprof $(EXEC) gmon.out > profiler_encode.txt
-	./$(EXEC) texts/profile_out.bin -o texts/profile_out.txt
-	gprof $(EXEC) gmon.out > profiler_decode.txt
-	rm -rf gmon.out
+	valgrind --tool=callgrind ./$(EXEC) texts/profile.txt -o texts/profile_out.bin
+	kcachegrind callgrind.out.*
 
 #------------------OTHER------------------
 clean:

@@ -1,11 +1,14 @@
 #include<stdio.h>
 #include<time.h>
+#include<math.h>
 #include<string.h>
 
 #include"huffman.h"
 
 #define DEFAULT_OUT_E "huffman_encoded.bin"
 #define DEFAULT_OUT_D "huffman_decoded.txt"
+#define KO_NUMBER pow(1024, 1)
+#define MO_NUMBER pow(1024, 2)
 
 // print some beautifull ascii art
 void print_title(char *title) {
@@ -27,17 +30,38 @@ void print_args(char *input_path, char *output_path, char mode) {
 
 // print the stats pannel
 void print_stats(clock_t t1, int input_size, int output_size, char mode) {
+	double time = (double)t1/CLOCKS_PER_SEC;
+
 	printf("Done!\n");
 	print_title("--Stats-");
+	// Times
 	if (mode == 'e') {
-		printf("Encoding time: %.0lf ms\n", 1000*(double)t1/CLOCKS_PER_SEC);
-	} else {
-		printf("Decoding time: %.0lf ms\n", 1000*(double)t1/CLOCKS_PER_SEC);
+		printf("Encoding time: %.0lf ms\n", 1e3 * time);
 	}
-	printf("Input size: %i bytes\n", input_size);
-	printf("Output size: %i bytes\n", output_size);
+	else {
+		printf("Decoding time: %.0lf ms\n", 1e3 * time);
+	}
+	// I/O Sizes
+	if (input_size < 1e3) {
+		printf("Input size: %i o\n", input_size);
+		printf("Output size: %i o\n", output_size);
+	}
+	else if (input_size < 1e6) {
+		printf("Input size: %.1f ko\n", (double)input_size / KO_NUMBER);
+		printf("Output size: %.1f ko\n", (double)output_size / KO_NUMBER);
+	}
+	else {
+		printf("Input size: %.1f Mo\n", (double)input_size / MO_NUMBER);
+		printf("Output size: %.1f Mo\n", (double)output_size / MO_NUMBER);
+	}
+	// Rates and speed
 	if (mode == 'e') {
 		printf("Compression rate: %.1lf %%\n", 100*((double)output_size/input_size));
+		printf("Compression speed: %.1f ko/s\n", (double)input_size / (KO_NUMBER * time));
+	}
+	else {
+		printf("Decompression rate: %.1lf %%\n", 100*((double)output_size/input_size));
+		printf("Decompression speed: %.1f ko/s\n", (double)input_size / (KO_NUMBER * time));
 	}
 }
 

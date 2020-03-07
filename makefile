@@ -1,8 +1,8 @@
 SRC=./src/
 TMP=./tmp/
 CC=gcc
-CFLAGS=
-LDFLAGS=-lm
+CFLAGS=-pg
+LDFLAGS=-lm -pg
 EXEC=huffman
 
 #------------------DEFAULT------------------
@@ -45,6 +45,13 @@ test_main: main
 	./$(EXEC) -h
 	./$(EXEC) texts/medium.txt -o texts/test_main_out.bin
 	./$(EXEC) texts/test_main_out.bin -o texts/test_main_out.txt
+
+profile: main
+	./$(EXEC) texts/profile.txt -o texts/profile_out.bin
+	gprof $(EXEC) gmon.out > profiler_encode.txt
+	./$(EXEC) texts/profile_out.bin -o texts/profile_out.txt
+	gprof $(EXEC) gmon.out > profiler_decode.txt
+	rm -rf gmon.out
 
 #------------------OTHER------------------
 clean:

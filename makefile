@@ -1,27 +1,31 @@
 SRC=./src/
 TMP=./tmp/
 CC=gcc
-CFLAGS=#-pg
-LDFLAGS=-lm #-pg
+CFLAGS=
+LDFLAGS=-lm
 EXEC=huffman
 
 #------------------DEFAULT------------------
 all: main
 
+#------------------FOLDERS------------------
+build_tmp:
+	mkdir -p $(TMP)
+
 #------------------COMPIL------------------
-main: main.o huffman.o binary_tree.o bin_file.o
+main: main.o huffman.o binary_tree.o bin_file.o | build_tmp
 	$(CC) -o $(EXEC) $(TMP)main.o $(TMP)huffman.o $(TMP)binary_tree.o $(TMP)bin_file.o $(LDFLAGS)
 
-main.o: $(SRC)main.c
+main.o: $(SRC)main.c | build_tmp
 	$(CC) -o $(TMP)main.o -c $(SRC)main.c $(CFLAGS)
 
-huffman.o: $(SRC)huffman.c $(SRC)huffman.h
+huffman.o: $(SRC)huffman.c $(SRC)huffman.h | build_tmp
 	$(CC) -o $(TMP)huffman.o -c $(SRC)huffman.c $(CFLAGS)
 
-binary_tree.o: $(SRC)binary_tree.c $(SRC)binary_tree.h
+binary_tree.o: $(SRC)binary_tree.c $(SRC)binary_tree.h | build_tmp
 	$(CC) -o $(TMP)binary_tree.o -c $(SRC)binary_tree.c $(CFLAGS)
 
-bin_file.o: $(SRC)bin_file.c $(SRC)bin_file.h
+bin_file.o: $(SRC)bin_file.c $(SRC)bin_file.h | build_tmp
 	$(CC) -o $(TMP)bin_file.o -c $(SRC)bin_file.c $(CFLAGS)
 
 #------------------TESTS------------------
@@ -35,7 +39,7 @@ test_tree:
 	./a.out
 	rm -rf a.out
 
-test_huff: bin_file.o binary_tree.o
+test_huff: bin_file.o binary_tree.o | build_tmp
 	$(CC) $(SRC)huffman.c $(TMP)bin_file.o $(TMP)binary_tree.o
 	./a.out
 	rm -rf a.out
